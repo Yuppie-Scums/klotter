@@ -19,7 +19,7 @@
 
       this.init();
       this.events();
-      this.onMouseMove();
+      this.onMouseMove()
 
     }
 
@@ -51,13 +51,6 @@
           console.log(event.point)
         }
       },
-
-      onMouseMove: function(event) {
-        console.log('calling')
-            // Each time the mouse is moved, set the content of
-            // the point text to describe the position of the mouse:
-            text.content = 'Your position is: ' + event.point.toString();
-        }
 
       test: function() {
         console.log('test from face')
