@@ -6,69 +6,53 @@
 
   var debug = false;
 
-  var CreateFace = (function () {
-
-    function Face (o) {
-      this.o = o;
-      this.head = null;
-      this.nose = null;
-      this.rightEye = null;
-      this.lefteye = null;
-      this.head = null;
-      this.head = null;
-
-      this.init();
-      this.events();
-      this.onMouseMove()
-
-    }
-
-    Face.prototype = {
-      init: function() {
-
-        this.head = new Head();
-        // console.log(this.head)
-        this.nose = new Nose({
-          headSegments: this.head.segments
-        });
-
-        this.leftEye = new Eye({
-          positions: this.nose.positions,
-          type: 'left'
-        });
-
-        this.rightEye = new Eye({
-          positions: this.nose.positions,
-          type: 'right'
-        });
-
-      },
-
-      events: function() {
-        console.log('calling events')
-        function onMouseMove(event) {
-          console.log('calling2')
-          console.log(event.point)
-        }
-      },
-
-      test: function() {
-        console.log('test from face')
-      }
-    }
-
-    return Face;
-
-  })()
-
   var Helpers = (function() {
 
     var headCenter = [];
     var headCornerPoints = {};
-    var originState = {};
+    var currentShapeState = {};
 
     function Helpers() {
       this.test = 'test'
+    }
+
+    Helpers.prototype.setCenter = function(center) {
+
+      headCenter = center;
+      return headCenter;
+
+    }
+
+    Helpers.prototype.getCenter = function() {
+
+      return headCenter;
+
+    }
+
+    Helpers.prototype.setHeadCornerPoints = function(points) {
+
+      headCornerPoints = points;
+      return headCornerPoints;
+
+    }
+
+    Helpers.prototype.getHeadCornerPoints = function() {
+
+      return headCornerPoints;
+
+    }
+
+    Helpers.prototype.setShapeState = function(shape) {
+
+      currentShapeState = shape || {};
+      return currentShapeState;
+
+    }
+
+    Helpers.prototype.getShapeState = function() {
+
+      return currentShapeState;
+
     }
 
     Helpers.prototype.addPoints = function(name, numbers) {
@@ -135,20 +119,24 @@
 
     Helpers.prototype.alterShape = function(name, moveDistance, original) {
 
+      console.log(currentShapeState.shape)
+
       var i = 0;
       var segments = this[name].segments;
       var length = segments.length;
-      var selectRandomFaceForm = this[original] ? this[original].shape : Math.floor((Math.random() * 2));
-      var firstParam = this[original] ? this[original].firstMove  + Math.floor((Math.random() * 3) + 1) : Math.floor((Math.random() * moveDistance) + 1);
-      var secondParam = this[original] ? this[original].secondMove + Math.floor((Math.random() * 3) + 1) : Math.floor((Math.random() * moveDistance) + 1);
+      var selectRandomFaceForm = currentShapeState.shape || Math.floor((Math.random() * 2) + 1);
+      var firstParam = currentShapeState.firstMove  + Math.floor((Math.random() * 3) + 1) || Math.floor((Math.random() * moveDistance) + 1);
+      var secondParam = currentShapeState.secondMove + Math.floor((Math.random() * 3) + 1) || Math.floor((Math.random() * moveDistance) + 1);
+
+      console.log(selectRandomFaceForm)
 
       switch(selectRandomFaceForm) {
-        case 0: // wide face aka stewie
+        case 1: // wide face aka stewie
           segments[0].point.x = segments[0].point.x - firstParam;
           segments[2].point.x = segments[2].point.x + firstParam;
           segments[3].point.y = segments[3].point.y + secondParam;
           break;
-        case 1:
+        case 2:
           segments[0].point.x = segments[0].point.x + firstParam;
           segments[2].point.x = segments[2].point.x - firstParam;
           segments[3].point.y = segments[3].point.y + secondParam + secondParam;
@@ -159,9 +147,12 @@
       // create a new shape from the circle
       // clockwise, starts from left
 
-      this[name].shape = selectRandomFaceForm;
-      this[name].firstMove = firstParam;
-      this[name].secondMove = secondParam;
+      currentShapeState = {
+        shape: selectRandomFaceForm,
+        firstMove: firstParam,
+        secondMove: secondParam,
+        segments: segments
+      }
 
       return this;
 
@@ -189,7 +180,56 @@
 
   })();
 
+  var CreateFace = (function () {
 
+    Face.prototype = new Helpers();
+    Face.prototype.constructor = Face;
+
+    function Face (o) {
+      this.o = o;
+      this.head = null;
+      this.nose = null;
+      this.rightEye = null;
+      this.lefteye = null;
+      this.head = null;
+      this.head = null;
+
+      this.init();
+      this.events();
+
+    }
+
+    Face.prototype.init = function() {
+
+      this.head = new Head();
+      // console.log(this.head)
+      this.nose = new Nose({
+        headSegments: this.head.segments
+      });
+
+      this.leftEye = new Eye({
+        positions: this.nose.positions,
+        type: 'left'
+      });
+
+      this.rightEye = new Eye({
+        positions: this.nose.positions,
+        type: 'right'
+      });
+
+    };
+
+    Face.prototype.events = function() {
+
+      function onMouseMove(event) {
+        console.log('calling2')
+        console.log(event.point)
+      }
+    }
+
+    return Face;
+
+  })()
 
   var Head = (function () {
 
@@ -212,21 +252,23 @@
       this.head = null;
 
       this.createShape('head', 200, 100)
-      .alterShape('head', 50)
-      .addPoints('head', 20)
-      .movePoint('head', 5);
+          .alterShape('head', 50)
+          .addPoints('head', 20)
+          .movePoint('head', 5);
 
       this.head2 = null;
       this.createShape('head2', 200, 100)
-      .alterShape('head2', 50, 'head')
-      .addPoints('head2', 20)
-      .movePoint('head2', 2);
+          .alterShape('head2', 50, 'head')
+          .addPoints('head2', 20)
+          .movePoint('head2', 2);
 
       this.head3 = null;
       this.createShape('head3', 200, 100)
-      .alterShape('head3', 50, 'head')
-      .addPoints('head3', 20)
-      .movePoint('head3', 2);
+          .alterShape('head3', 50, 'head')
+          .addPoints('head3', 20)
+          .movePoint('head3', 2);
+
+      this.setShapeState();
 
       return this.head;
 
@@ -291,6 +333,8 @@
           .addPoints('nose3', 20)
           .movePoint('nose3', 2);
 
+      this.setShapeState()
+
       return this;
 
     }
@@ -341,21 +385,25 @@
 
       this.eye = null;
       this.createShape('eye', this.center, 10)
-      .alterShape('eye', 10)
-      .addPoints('eye', 20)
-      .movePoint('eye', 5);
+          .alterShape('eye', 10)
+          .addPoints('eye', 20)
+          .movePoint('eye', 5);
 
       this.eye2 = null;
       this.createShape('eye2', this.center, 10)
-      .alterShape('eye2', 10, 'eye')
-      .addPoints('eye2', 20)
-      .movePoint('eye2', 2);
+          .alterShape('eye2', 10, 'eye')
+          .addPoints('eye2', 20)
+          .movePoint('eye2', 2);
 
       this.eye3 = null;
       this.createShape('eye3', this.center, 10)
-      .alterShape('eye3', 10, 'eye')
-      .addPoints('eye3', 20)
-      .movePoint('eye3', 2);
+          .alterShape('eye3', 10, 'eye')
+          .addPoints('eye3', 20)
+          .movePoint('eye3', 2);
+
+      console.log(this.getShapeState())
+      this.setShapeState()
+
 
       return this.eye
 
