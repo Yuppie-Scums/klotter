@@ -29,9 +29,17 @@
       init: function() {
 
         this.head = new Head();
-
+        // console.log(this.head)
         this.nose = new Nose({
           headSegments: this.head.segments
+        });
+
+        this.leftEye = new Eye({
+          headSegments: this.nose.positions
+        });
+
+        this.rightEye = new Eye({
+          headSegments: this.nose.positions
         });
 
       },
@@ -105,42 +113,55 @@
 
     function Head (o) {
       this.o = o;
-      this.head = this.createShape(200, 100)
-          .alterShape(50)
-          .addPoints(40)
-          .movePoint(12)
 
+      this.head = null;
 
+      this.createShape('head', 200, 100)
+      .alterShape('head', 50)
+      .addPoints('head', 20)
+      .movePoint('head', 5);
+
+      this.head2 = null;
+      this.createShape('head2', 200, 100)
+      .alterShape('head2', 50, 'head')
+      .addPoints('head2', 20)
+      .movePoint('head2', 2);
+
+      this.head3 = null;
+      this.createShape('head3', 200, 100)
+      .alterShape('head3', 50, 'head')
+      .addPoints('head3', 20)
+      .movePoint('head3', 2);
 
       return this.head;
 
     }
 
     Head.prototype = {
-      createShape: function(position, size) {
+      createShape: function(head, position, size) {
 
-        this.head = new Path.Circle({
+        this[head] = new Path.Circle({
           center: [position, position],
           radius: size
         });
 
-        this.head.strokeColor = 'black';
-        this.head.strokeWidth = 1;
+        this[head].strokeColor = 'black';
+        this[head].strokeWidth = 1;
 
-        this.head.selected = debug;
+        this[head].selected = debug;
 
         return this;
 
       },
 
-      alterShape: function(moveDistance) {
+      alterShape: function(head, moveDistance, original) {
 
         var i = 0;
-        var segments = this.head.segments;
+        var segments = this[head].segments;
         var length = segments.length;
-        var selectRandomFaceForm = Math.floor((Math.random() * 2));
-        var firstParam = Math.floor((Math.random() * moveDistance) + 1);
-        var secondParam = Math.floor((Math.random() * moveDistance) + 1);
+        var selectRandomFaceForm = this[original] ? this[original].shape : Math.floor((Math.random() * 2));
+        var firstParam = this[original] ? this[original].firstMove  + Math.floor((Math.random() * 3) + 1) : Math.floor((Math.random() * moveDistance) + 1);
+        var secondParam = this[original] ? this[original].secondMove + Math.floor((Math.random() * 3) + 1) : Math.floor((Math.random() * moveDistance) + 1);
 
         switch(selectRandomFaceForm) {
           case 0: // wide face aka stewie
@@ -159,21 +180,27 @@
         // create a new shape from the circle
         // clockwise, starts from left
 
+        this[head].shape = selectRandomFaceForm;
+        this[head].firstMove = firstParam;
+        this[head].secondMove = secondParam;
+
         return this;
 
       },
 
-      addPoints: function(numbers) {
-        this.head.flatten(numbers);
-        this.head.smooth();
+      addPoints: function(head, numbers) {
+
+        this[head].flatten(numbers);
+        this[head].smooth();
 
         return this;
+
       },
 
-      movePoint: function(moveDistance) {
+      movePoint: function(head, moveDistance) {
 
         var i = 0;
-        var segments = this.head.segments;
+        var segments = this[head].segments;
         var length = segments.length;
 
         for (; i < length; i++) {
@@ -183,7 +210,6 @@
           points.y = points.y + Math.floor((Math.random() * moveDistance) + 1);
 
         }
-
 
         return this;
 
@@ -213,11 +239,14 @@
     function Nose (o) {
 
       this.o = o;
-      console.log(this)
-      this.center = this.findCenterfromSegments(this.o.headSegments)
-      this.nose = null;
+      this.positions = this.findCenterfromSegments(this.o.headSegments)
+      this.nose = {};
 
-      this.createShape(this.center, 10)
+      this.createShape('nose', this.positions.center, 10)
+          .addPoints('nose', 20)
+          .movePoint('nose', 5)
+
+      return this;
 
     }
 
@@ -228,7 +257,7 @@
         var length;
 
         if (segments) {
-          segments = segments.length;
+          length = segments.length;
         } else {
           return;
         }
@@ -238,7 +267,7 @@
           top: segments[0].point.y,
           right: segments[0].point.x,
           bottom: segments[0].point.y
-        }
+        };
 
         for (; i < length; i++) {
 
@@ -252,25 +281,56 @@
         var x = cornerPoints.left + ((cornerPoints.right - cornerPoints.left) / 2)
         var y = cornerPoints.top + ((cornerPoints.bottom - cornerPoints.top) / 2)
 
-        return [x, y]
+        return {
+          positions: cornerPoints,
+          center: [x, y]
+        }
 
       },
 
-      createShape: function(position, size) {
+      createShape: function(noseName, position, size) {
 
-        this.head = new Path.Circle({
+        this[noseName] = new Path.Circle({
           center: position,
           radius: size
         });
 
-        this.head.strokeColor = 'black';
-        this.head.strokeWidth = 1;
+        this[noseName].strokeColor = 'black';
+        this[noseName].strokeWidth = 1;
 
         // this.head.selected = debug;
 
         return this;
 
       },
+
+      addPoints: function(head, numbers) {
+
+        this[head].flatten(numbers);
+        this[head].smooth();
+
+        return this;
+
+      },
+
+      movePoint: function(head, moveDistance) {
+
+        var i = 0;
+        var segments = this[head].segments;
+        var length = segments.length;
+
+        for (; i < length; i++) {
+
+          var points = segments[i].point
+          points.x = points.x + Math.floor((Math.random() * moveDistance) + 1);
+          points.y = points.y + Math.floor((Math.random() * moveDistance) + 1);
+
+        }
+
+        return this;
+
+      }
+
     }
 
     return Nose;
@@ -295,6 +355,7 @@
 
     function Eye (o) {
       this.o = o;
+      console.log(this)
     }
 
     return Eye;
