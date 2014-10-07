@@ -10,7 +10,7 @@
 
     var headCenter = [];
     var headCornerPoints = {};
-    var currentShapeState = {};
+    var shapes = {};
 
     function Helpers() {
       this.test = 'test'
@@ -42,16 +42,16 @@
 
     }
 
-    Helpers.prototype.setShapeState = function(shape) {
+    Helpers.prototype.setShapeState = function(shape, name) {
 
-      currentShapeState = shape || {};
-      return currentShapeState;
+      shapes[name] = shape || {};
+      return shapes;
 
     }
 
-    Helpers.prototype.getShapeState = function() {
+    Helpers.prototype.getShapeState = function(name) {
 
-      return currentShapeState;
+      return name ? shapes[name] : shapes;
 
     }
 
@@ -94,9 +94,6 @@
       var x = cornerPoints.left + ((cornerPoints.right - cornerPoints.left) / 2)
       var y = cornerPoints.top + ((cornerPoints.bottom - cornerPoints.top) / 2)
 
-      headCenter = [x, y];
-      headCornerPoints = cornerPoints;
-
       return {
         positions: cornerPoints,
         center: [x, y]
@@ -117,18 +114,17 @@
       return [xPosition, yPosition]
     }
 
-    Helpers.prototype.alterShape = function(name, moveDistance, original) {
+    Helpers.prototype.alterShape = function(name, moveDistance, type) {
 
-      console.log(currentShapeState.shape)
+      console.log(shapes)
+      console.log(type)
 
       var i = 0;
       var segments = this[name].segments;
       var length = segments.length;
-      var selectRandomFaceForm = currentShapeState.shape || Math.floor((Math.random() * 2) + 1);
-      var firstParam = currentShapeState.firstMove  + Math.floor((Math.random() * 3) + 1) || Math.floor((Math.random() * moveDistance) + 1);
-      var secondParam = currentShapeState.secondMove + Math.floor((Math.random() * 3) + 1) || Math.floor((Math.random() * moveDistance) + 1);
-
-      console.log(selectRandomFaceForm)
+      var selectRandomFaceForm = shapes[type] ? shapes[type].shape : Math.floor((Math.random() * 2) + 1);
+      var firstParam = shapes[type] ? shapes[type].firstMove  + Math.floor((Math.random() * 3) + 1) : Math.floor((Math.random() * moveDistance) + 1);
+      var secondParam = shapes[type] ? shapes[type].secondMove + Math.floor((Math.random() * 3) + 1) : Math.floor((Math.random() * moveDistance) + 1);
 
       switch(selectRandomFaceForm) {
         case 1: // wide face aka stewie
@@ -146,13 +142,9 @@
 
       // create a new shape from the circle
       // clockwise, starts from left
-
-      currentShapeState = {
-        shape: selectRandomFaceForm,
-        firstMove: firstParam,
-        secondMove: secondParam,
-        segments: segments
-      }
+      this[name].shape = selectRandomFaceForm;
+      this[name].firstMove = firstParam;
+      this[name].secondMove = secondParam;
 
       return this;
 
@@ -221,10 +213,6 @@
 
     Face.prototype.events = function() {
 
-      function onMouseMove(event) {
-        console.log('calling2')
-        console.log(event.point)
-      }
     }
 
     return Face;
@@ -256,6 +244,9 @@
           .addPoints('head', 20)
           .movePoint('head', 5);
 
+      this.setShapeState(this.head, 'head')
+      console.log(this.getShapeState())
+
       this.head2 = null;
       this.createShape('head2', 200, 100)
           .alterShape('head2', 50, 'head')
@@ -268,7 +259,7 @@
           .addPoints('head3', 20)
           .movePoint('head3', 2);
 
-      this.setShapeState();
+
 
       return this.head;
 
@@ -316,7 +307,7 @@
     function Nose (o) {
 
       this.o = o;
-      this.positions = this.findCenterfromSegments(this.o.headSegments)
+      this.positions = this.findCenterfromSegments(this.getShapeState['head'])
 
       this.nose = null;
       this.createShape('nose', this.positions.center, 10)
