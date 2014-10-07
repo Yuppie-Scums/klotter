@@ -307,7 +307,8 @@
     function Nose (o) {
 
       this.o = o;
-      this.positions = this.findCenterfromSegments(this.getShapeState['head'])
+      this.head = this.getShapeState('head')
+      this.positions = this.findCenterfromSegments(this.head.segments)
 
       this.nose = null;
       this.createShape('nose', this.positions.center, 10)
