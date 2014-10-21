@@ -1,9 +1,16 @@
 
 
+//include a perlin noise class from github
+//http://en.wikipedia.org/wiki/Perlin_noise
+include("https://gist.github.com/banksean/304522/raw/f306edfdab80d72795565a5fcdeb4eb86368fee0/perlin-noise-classical.js")
+
+//initialize a perlin noise instance
+var noise = new ClassicalNoise();
+var noiseSeed = Math.random() * 255;
+
 (function() {
 
   view.viewSize = new Size(500, 500);
-
   var debug = false;
 
   var Helpers = (function() {
@@ -14,45 +21,6 @@
 
     function Helpers() {
       this.test = 'test'
-    }
-
-    Helpers.prototype.setCenter = function(center) {
-
-      headCenter = center;
-      return headCenter;
-
-    }
-
-    Helpers.prototype.getCenter = function() {
-
-      return headCenter;
-
-    }
-
-    Helpers.prototype.setHeadCornerPoints = function(points) {
-
-      headCornerPoints = points;
-      return headCornerPoints;
-
-    }
-
-    Helpers.prototype.getHeadCornerPoints = function() {
-
-      return headCornerPoints;
-
-    }
-
-    Helpers.prototype.setShapeState = function(shape, name) {
-
-      shapes[name] = shape || {};
-      return shapes;
-
-    }
-
-    Helpers.prototype.getShapeState = function(name) {
-
-      return name ? shapes[name] : shapes;
-
     }
 
     Helpers.prototype.addPoints = function(name, numbers) {
@@ -116,9 +84,6 @@
 
     Helpers.prototype.alterShape = function(name, moveDistance, type) {
 
-      console.log(shapes)
-      console.log(type)
-
       var i = 0;
       var segments = this[name].segments;
       var length = segments.length;
@@ -172,19 +137,23 @@
 
   })();
 
-  var CreateFace = (function () {
+  var CreatePenis = (function () {
 
-    Face.prototype = new Helpers();
-    Face.prototype.constructor = Face;
+    Penis.prototype = new Helpers();
+    Penis.prototype.constructor = Face;
 
-    function Face (o) {
+    function Penis (o) {
+
       this.o = o;
-      this.head = null;
-      this.nose = null;
-      this.rightEye = null;
-      this.lefteye = null;
-      this.head = null;
-      this.head = null;
+
+      this.startPosition;
+      this.style;
+
+
+      this.leftBall = null;
+      this.rightBal = null;
+      this.shaft = null;
+      this.tip = null;
 
       this.init();
       this.events();
@@ -193,18 +162,13 @@
 
     Face.prototype.init = function() {
 
-      this.head = new Head();
-      // console.log(this.head)
-      this.nose = new Nose({
-        headSegments: this.head.segments
-      });
-
-      this.leftEye = new Eye({
-        positions: this.nose.positions,
+      this.leftBall = new Ball({
+        positions: this.startPosition,
+        style: this.style,
         type: 'left'
       });
 
-      this.rightEye = new Eye({
+      this.leftBall = new Ball({
         positions: this.nose.positions,
         type: 'right'
       });
@@ -215,193 +179,24 @@
 
     }
 
-    return Face;
+    return Penis;
 
   })()
 
-  var Head = (function () {
+  var Ball = (function (o) {
 
-    /*
+    Ball.prototype = new Helpers();
+    Ball.prototype.constructor = Eye;
 
-     * 1. Create a random sphere of circle
-     * 2. add random amount of points
-     * 3. move each point X amount to get a better look
-     * 4. use same 1 and 2 settings and but move points
-          and repaint
-
-     */
-
-    Head.prototype = new Helpers();
-    Head.prototype.constructor = Head;
-
-    function Head (o) {
+    function Ball (o) {
       this.o = o;
 
-      this.head = null;
 
-      this.createShape('head', 200, 100)
-          .alterShape('head', 50)
-          .addPoints('head', 20)
-          .movePoint('head', 5);
-
-      this.setShapeState(this.head, 'head')
-      console.log(this.getShapeState())
-
-      this.head2 = null;
-      this.createShape('head2', 200, 100)
-          .alterShape('head2', 50, 'head')
-          .addPoints('head2', 20)
-          .movePoint('head2', 2);
-
-      this.head3 = null;
-      this.createShape('head3', 200, 100)
-          .alterShape('head3', 50, 'head')
-          .addPoints('head3', 20)
-          .movePoint('head3', 2);
-
-
-
-      return this.head;
+      return this
 
     }
 
-    Head.prototype.createShape = function(name, position, size) {
-
-      var alpha = Math.random()
-
-      this[name] = new Path.Circle({
-        center: [position, position],
-        radius: size
-      });
-
-      this[name].strokeColor = new Color(0, 0, 0, alpha);
-
-      this[name].strokeWidth = 1;
-
-      this[name].selected = debug;
-
-      return this;
-
-    }
-
-    return Head;
-
-  })()
-
-  var Nose = (function () {
-
-    /*
-
-     * 1. Find center of Head
-     * 2. select nose style
-     * 3. add random amount of points
-     * 4. move each point X amount to get a better look
-     * 5. use same 1 and 2 settings and but move points
-          and repaint
-
-     */
-
-    Nose.prototype = new Helpers();
-    Nose.prototype.constructor = Nose;
-
-    function Nose (o) {
-
-      this.o = o;
-      this.head = this.getShapeState('head')
-      this.positions = this.findCenterfromSegments(this.head.segments)
-
-      this.nose = null;
-      this.createShape('nose', this.positions.center, 10)
-          .addPoints('nose', 20)
-          .movePoint('nose', 5)
-
-      this.nose2 = null;
-      this.createShape('nose2', this.positions.center, 10)
-          .addPoints('nose2', 20)
-          .movePoint('nose2', 2);
-
-      this.nose3 = null;
-      this.createShape('nose3', this.positions.center, 10)
-          .addPoints('nose3', 20)
-          .movePoint('nose3', 2);
-
-      this.setShapeState()
-
-      return this;
-
-    }
-
-    Nose.prototype.createShape = function(name, position, size) {
-
-      var alpha = Math.random()
-
-
-
-      this[name] = new Path.Circle({
-        center: position,
-        radius: size
-      });
-
-      this[name].strokeColor = new Color(0, 0, 0, alpha);
-      this[name].strokeWidth = 1;
-
-      // this.head.selected = debug;
-
-      return this;
-
-    }
-
-    return Nose;
-
-  })()
-
-  var Eye = (function (o) {
-
-    /*
-
-     * 1. Find center between nose and top of head
-     * 2. move 50% left (or right)
-     * 3. Create a random sphere of circle
-     * 4. add random amount of points
-     * 5. move each point X amount to get a better look
-     * 6. draw pupil
-
-     */
-
-    Eye.prototype = new Helpers();
-    Eye.prototype.constructor = Eye;
-
-    function Eye (o) {
-      this.o = o;
-      this.center = this.findCenterfromPosition(o.positions, o.type)
-
-      this.eye = null;
-      this.createShape('eye', this.center, 10)
-          .alterShape('eye', 10)
-          .addPoints('eye', 20)
-          .movePoint('eye', 5);
-
-      this.eye2 = null;
-      this.createShape('eye2', this.center, 10)
-          .alterShape('eye2', 10, 'eye')
-          .addPoints('eye2', 20)
-          .movePoint('eye2', 2);
-
-      this.eye3 = null;
-      this.createShape('eye3', this.center, 10)
-          .alterShape('eye3', 10, 'eye')
-          .addPoints('eye3', 20)
-          .movePoint('eye3', 2);
-
-      console.log(this.getShapeState())
-      this.setShapeState()
-
-
-      return this.eye
-
-    }
-
-    Eye.prototype.createShape = function(name, position, size) {
+    Ball.prototype.createShape = function(name, position, size) {
 
       var alpha = Math.random()
 
@@ -418,56 +213,19 @@
       return this;
     }
 
-    return Eye;
+    return Ball;
 
   })()
 
-  var Mouth = (function () {
-
-    /*
-
-     * 1. Find center between nose and top of head
-     * 2. move 50% left (or right)
-     * 3. Create a random sphere of circle
-     * 4. add random amount of points
-     * 5. move each point X amount to get a better look
-     * 6. draw pupil
-
-     */
-
-    Mouth.prototype = new Helpers();
-    Mouth.prototype.constructor = Mouth;
-
-    function Mouth (o) {
-      this.o = o;
-    }
-
-    return Mouth;
-
-  })()
-
-  var Hair = (function () {
-
-    Hair.prototype = new Helpers();
-    Hair.prototype.constructor = Hair;
-
-    function Hair (o) {
-      this.o = o;
-    }
-
-    return Hair;
-
-  })()
-
-  new CreateFace()
+  new CreatePenis()
 
 
 })()
 
-  var text = new PointText(new Point(30, 30));
-  text.fillColor = 'black';
+var text = new PointText(new Point(30, 30));
+text.fillColor = 'black';
 
-  text.content = 'Move your mouse over the view, to see its position';
+text.content = 'Move your mouse over the view, to see its position';
 
 function onMouseMove(event) {
   console.log('calling')
