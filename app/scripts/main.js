@@ -2,11 +2,11 @@
 
 //include a perlin noise class from github
 //http://en.wikipedia.org/wiki/Perlin_noise
-include("https://gist.github.com/banksean/304522/raw/f306edfdab80d72795565a5fcdeb4eb86368fee0/perlin-noise-classical.js")
+// include("https://gist.github.com/banksean/304522/raw/f306edfdab80d72795565a5fcdeb4eb86368fee0/perlin-noise-classical.js")
 
 //initialize a perlin noise instance
-var noise = new ClassicalNoise();
-var noiseSeed = Math.random() * 255;
+// var noise = new ClassicalNoise();
+// var noiseSeed = Math.random() * 255;
 
 (function() {
 
@@ -23,10 +23,10 @@ var noiseSeed = Math.random() * 255;
       this.test = 'test'
     }
 
-    Helpers.prototype.addPoints = function(name, numbers) {
+    Helpers.prototype.addPoints = function(numbers) {
 
-      this[name].flatten(numbers);
-      this[name].smooth();
+      this.flatten(numbers);
+      this.smooth();
 
       return this;
 
@@ -82,10 +82,10 @@ var noiseSeed = Math.random() * 255;
       return [xPosition, yPosition]
     }
 
-    Helpers.prototype.alterShape = function(name, moveDistance, type) {
+    Helpers.prototype.alterShape = function(moveDistance, type) {
 
       var i = 0;
-      var segments = this[name].segments;
+      var segments = this.segments;
       var length = segments.length;
       var selectRandomFaceForm = shapes[type] ? shapes[type].shape : Math.floor((Math.random() * 2) + 1);
       var firstParam = shapes[type] ? shapes[type].firstMove  + Math.floor((Math.random() * 3) + 1) : Math.floor((Math.random() * moveDistance) + 1);
@@ -107,18 +107,18 @@ var noiseSeed = Math.random() * 255;
 
       // create a new shape from the circle
       // clockwise, starts from left
-      this[name].shape = selectRandomFaceForm;
-      this[name].firstMove = firstParam;
-      this[name].secondMove = secondParam;
+      this.shape = selectRandomFaceForm;
+      this.firstMove = firstParam;
+      this.secondMove = secondParam;
 
       return this;
 
     }
 
-    Helpers.prototype.movePoint = function(name, moveDistance) {
+    Helpers.prototype.movePoint = function(moveDistance) {
 
       var i = 0;
-      var segments = this[name].segments;
+      var segments = this.segments;
       var length = segments.length;
 
       for (; i < length; i++) {
@@ -140,15 +140,16 @@ var noiseSeed = Math.random() * 255;
   var CreatePenis = (function () {
 
     Penis.prototype = new Helpers();
-    Penis.prototype.constructor = Face;
+    Penis.prototype.constructor = Penis;
 
     function Penis (o) {
 
       this.o = o;
 
-      this.startPosition;
-      this.style;
+      this.startPosition = [150, 150]; // apply random startposition later
+      this.style = 'left';
 
+      this.group = new Group();
 
       this.leftBall = null;
       this.rightBal = null;
@@ -160,22 +161,32 @@ var noiseSeed = Math.random() * 255;
 
     }
 
-    Face.prototype.init = function() {
+    Penis.prototype.init = function() {
 
       this.leftBall = new Ball({
-        positions: this.startPosition,
+        position: this.startPosition,
         style: this.style,
-        type: 'left'
+        type: 'left',
+        size: 50
       });
 
-      this.leftBall = new Ball({
-        positions: this.nose.positions,
-        type: 'right'
+      this.rightBall = new Ball({
+        position: [160, 155],
+        style: this.style,
+        type: 'right',
+        size: 50
       });
+
+      this.shaft = new Shaft({
+        position: [],
+        style: this.style,
+        type: 'normal',
+        size: 50
+      })
 
     };
 
-    Face.prototype.events = function() {
+    Penis.prototype.events = function() {
 
     }
 
@@ -186,34 +197,85 @@ var noiseSeed = Math.random() * 255;
   var Ball = (function (o) {
 
     Ball.prototype = new Helpers();
-    Ball.prototype.constructor = Eye;
+    Ball.prototype.constructor = Ball;
 
     function Ball (o) {
       this.o = o;
 
+      this.ball = this.createShape(this.o.position, this.o.size)
 
-      return this
+      // this.ball = this.alterShape.call(this.ball, 10)
+      // this.ball = this.addPoints.call(this.ball, 15)
+      // this.ball = this.movePoint.call(this.ball, 3);
+
+      return this.ball
 
     }
 
-    Ball.prototype.createShape = function(name, position, size) {
+    Ball.prototype.createShape = function(position, size) {
 
       var alpha = Math.random()
+      var ball;
 
-      this[name] = new Path.Circle({
+      ball = new Path.Circle({
         center: position,
         radius: size
       });
 
-      this[name].strokeColor = new Color(0, 0, 0, alpha);
-      this[name].strokeWidth = 1;
+      ball.strokeColor = new Color(0, 0, 0, alpha + 0.1);
+      ball.strokeWidth = 1;
+      ball.fillColor = new Color(250, 250, 250);
 
-      this[name].selected = debug;
+      ball.selected = debug;
 
-      return this;
+      return ball;
     }
 
     return Ball;
+
+  })()
+
+
+  var Shaft = (function (o) {
+
+    Shaft.prototype = new Helpers();
+    Shaft.prototype.constructor = Shaft;
+
+    function Shaft (o) {
+      this.o = o;
+
+      this.shaft = this.createShape(this.o.position, this.o.size)
+
+      // this.ball = this.alterShape.call(this.ball, 10)
+      // this.ball = this.addPoints.call(this.ball, 15)
+      // this.ball = this.movePoint.call(this.ball, 3);
+
+      this.shaft.type = o.type;
+
+      return this.shaft
+
+    }
+
+    Shaft.prototype.createShape = function(position, size) {
+
+      var alpha = Math.random()
+      var shaft;
+
+      shaft = new Path.Circle({
+        center: position,
+        radius: size
+      });
+
+      shaft.strokeColor = new Color(0, 0, 0, alpha + 0.1);
+      shaft.strokeWidth = 1;
+      shaft.fillColor = new Color(250, 250, 250);
+
+      shaft.selected = debug;
+
+      return shaft;
+    }
+
+    return Shaft;
 
   })()
 
