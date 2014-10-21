@@ -13,6 +13,8 @@
   view.viewSize = new Size(500, 500);
   var debug = false;
 
+  // Helper object that contains modifaction methods
+
   var Helpers = (function() {
 
     var headCenter = [];
@@ -87,9 +89,9 @@
       var i = 0;
       var segments = this.segments;
       var length = segments.length;
-      var selectRandomFaceForm = shapes[type] ? shapes[type].shape : Math.floor((Math.random() * 2) + 1);
-      var firstParam = shapes[type] ? shapes[type].firstMove  + Math.floor((Math.random() * 3) + 1) : Math.floor((Math.random() * moveDistance) + 1);
-      var secondParam = shapes[type] ? shapes[type].secondMove + Math.floor((Math.random() * 3) + 1) : Math.floor((Math.random() * moveDistance) + 1);
+      var selectRandomFaceForm = this.shape ? this.shape : Math.floor((Math.random() * 2) + 1);
+      var firstParam = this.firstMove ? this.firstMove  + Math.floor((Math.random() * 3) + 1) : Math.floor((Math.random() * moveDistance) + 1);
+      var secondParam = this.secondMove ? this.secondMove+ Math.floor((Math.random() * 3) + 1) : Math.floor((Math.random() * moveDistance) + 1);
 
       switch(selectRandomFaceForm) {
         case 1: // wide face aka stewie
@@ -146,8 +148,14 @@
 
       this.o = o;
 
-      this.startPosition = [150, 150]; // apply random startposition later
-      this.style = 'left';
+      this.o.startPosition = [150, 150]; // apply random startposition later
+      this.o.positionStyle = Math.round(Math.random()) ? 'left' : 'right';
+      this.o.shapeStyle = Math.round(Math.random()) ? 'european' : 'american';
+      this.o.ballStyle = Math.round(Math.random()) ? 'firm' : 'loose';
+      this.o.ballSize = this.o.ballStyle === 'firm' && Math.round(Math.random()) ? 'big' : 'normal';
+      this.o.angle = Math.floor(Math.random() * 90 ) + 15;
+
+      console.log(this);
 
       this.group = new Group();
 
@@ -279,7 +287,7 @@
 
   })()
 
-  new CreatePenis()
+  new CreatePenis({})
 
 
 })()
