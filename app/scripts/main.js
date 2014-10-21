@@ -146,16 +146,20 @@
 
     function Penis (o) {
 
-      this.o = o;
+      this.o = {};
 
       this.o.startPosition = [150, 150]; // apply random startposition later
-      this.o.positionStyle = Math.round(Math.random()) ? 'left' : 'right';
-      this.o.shapeStyle = Math.round(Math.random()) ? 'european' : 'american';
-      this.o.ballStyle = Math.round(Math.random()) ? 'firm' : 'loose';
-      this.o.ballSize = this.o.ballStyle === 'firm' && Math.round(Math.random()) ? 'big' : 'normal';
-      this.o.angle = Math.floor(Math.random() * 90 ) + 15;
+      this.o.viewAngle = Math.round(Math.random()) ? 'left' : 'right';
+      
+      this.o.ballsWeight = Math.floor(Math.random() * 100 ) + 1;
+      this.o.ballsSize = this.o.ballStyle === 'firm' && Math.round(Math.random()) ? 'big' : 'normal';
 
-      console.log(this);
+      this.o.shaftStyle = Math.round(Math.random()) ? 'european' : 'american';
+      this.o.shaftAngle = Math.floor(Math.random() * 90 ) + 15;
+
+      this.o = _.extend(this.o, o)
+
+      console.log(this.o);
 
       this.group = new Group();
 

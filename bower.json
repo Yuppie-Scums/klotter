@@ -4,6 +4,7 @@
   "dependencies": {
     "jquery": "~1.11.1",
     "modernizr": "~2.8.2",
-    "paper": "~0.9.20"
+    "paper": "~0.9.20",
+    "underscore": "~1.7.0"
   }
 }
