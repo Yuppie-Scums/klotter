@@ -150,10 +150,17 @@
 
       this.o.startPosition = [150, 150]; // apply random startposition later
       this.o.viewAngle = Math.round(Math.random()) ? 'left' : 'right';
-      
+
+
+      // each ball(sack) will be created from two circles, one represent the base and one represent the acctual ball.
+      // We draw the first circle at the starting position and calvulate the second ball depending on weight, the more wieight,
+      // the further down the second circle will be.
+      // the we apply the size of the the ball to the second cirlce.
+      // finally we attach the the two circles
       this.o.ballsWeight = Math.floor(Math.random() * 100 ) + 1;
       this.o.ballsSize = this.o.ballStyle === 'firm' && Math.round(Math.random()) ? 'big' : 'normal';
 
+      
       this.o.shaftStyle = Math.round(Math.random()) ? 'european' : 'american';
       this.o.shaftAngle = Math.floor(Math.random() * 90 ) + 15;
 
