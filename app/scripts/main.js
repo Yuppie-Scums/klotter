@@ -160,13 +160,12 @@
       this.o.ballsWeight = Math.floor(Math.random() * 100 ) + 1;
       this.o.ballsSize = this.o.ballStyle === 'firm' && Math.round(Math.random()) ? 'big' : 'normal';
 
-      
+
       this.o.shaftStyle = Math.round(Math.random()) ? 'european' : 'american';
       this.o.shaftAngle = Math.floor(Math.random() * 90 ) + 15;
 
       this.o = _.extend(this.o, o)
 
-      console.log(this.o);
 
       this.group = new Group();
 
@@ -183,14 +182,14 @@
     Penis.prototype.init = function() {
 
       this.leftBall = new Ball({
-        position: this.startPosition,
+        position: this.o.startPosition,
         style: this.style,
         type: 'left',
         size: 50
       });
 
       this.rightBall = new Ball({
-        position: [160, 155],
+        position: this.setAnglePosition(this.o.startPosition, this.o.viewAngle, this.o.shaftAngle),
         style: this.style,
         type: 'right',
         size: 50
@@ -207,6 +206,25 @@
 
     Penis.prototype.events = function() {
 
+    }
+
+    Penis.prototype.setAnglePosition = function(startingPoint, viewAngle, shaftAngle) {
+
+      var newStartingPoint = startingPoint;
+
+      if (viewAngle === 'left') {
+        newStartingPoint[0] = startingPoint[0] + Math.floor(Math.random() * 10) + 10;
+      } else {
+        newStartingPoint[0] = startingPoint[0] - Math.floor(Math.random() * 10) + 10;
+      }
+
+      // if (shaftAngle >= 70) {
+      //   newStartingPoint[1] = startingPoint[1] + Math.floor(Math.random() * 10) + 10;
+      // } else {
+      //   newStartingPoint[1] = startingPoint[1] - Math.floor(Math.random() * 10) + 10;
+      // }
+
+      return newStartingPoint;
     }
 
     return Penis;
