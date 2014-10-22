@@ -10,8 +10,12 @@
 
 (function() {
 
-  view.viewSize = new Size(500, 500);
+  view.viewSize = new Size(1000, 1000);
   var debug = false;
+  project.currentStyle = {
+    fillColor: 'black'
+  };
+
 
   // Helper object that contains modifaction methods
 
@@ -186,6 +190,9 @@
 
       this.ballSack = new BallSack({
         position: this.o.startPosition,
+        startPosition: [200, 150],
+        leftPosition: [150, 400],
+        rightPosition: [250, 400],
         style: this.style,
         type: 'left',
         size: 50
@@ -254,6 +261,8 @@
     	});
     }
 
+    function returnPoint() {}
+
     BallSack.prototype = new Helpers();
     BallSack.prototype.constructor = BallSack;
 
@@ -265,16 +274,17 @@
       this.connections = new Group();
       this.circlePaths = [];
 
-      this.topPosition = this.createShape(this.o.position, this.o.size)
+      this.topPosition = this.createShape(this.o.startPosition, this.o.size, 'root')
       this.circlePaths.push(this.topPosition);
 
-      this.leftBall = this.createShape(this.o.position, this.o.size)
+      this.leftBall = this.createShape(this.o.leftPosition, this.o.size, 'left')
       this.circlePaths.push(this.leftBall);
 
-      this.rightBall = this.createShape(this.o.position, this.o.size)
+      this.rightBall = this.createShape(this.o.rightPosition, this.o.size, 'right')
       this.circlePaths.push(this.rightBall);
 
       this.generateConnections(this.circlePaths);
+
       // this.ball = this.alterShape.call(this.ball, 10)
       // this.ball = this.addPoints.call(this.ball, 15)
       // this.ball = this.movePoint.call(this.ball, 3);
@@ -283,7 +293,7 @@
 
     }
 
-    BallSack.prototype.createShape = function(position, size) {
+    BallSack.prototype.createShape = function(position, size, name) {
 
       var alpha = Math.random()
       var ball;
@@ -295,7 +305,8 @@
 
       ball.strokeColor = new Color(0, 0, 0);
       ball.strokeWidth = 1;
-      ball.fillColor = new Color(250, 250, 250);
+      ball.name = name
+      // ball.fillColor = new Color(250, 250, 250);
 
       ball.selected = debug;
 
@@ -306,14 +317,18 @@
       // Remove the last connection paths:
     	this.connections.children = [];
 
-    	for (var i = 0, l = paths.length; i < l; i++) {
-    		for (var j = i - 1; j >= 0; j--) {
-    			var path = this.connect(paths[i], paths[j], 0.5, handle_len_rate, 300);
-    			if (path) {
-    				this.connections.appendTop(path);
-    			}
-    		}
-    	}
+      this.testConnect(paths[1], paths[2], paths[0], 0.5, handle_len_rate, 600)
+
+    	// for (var i = 0, l = paths.length; i < l; i++) {
+    	// 	for (var j = i - 1; j >= 0; j--) {
+      //
+    	// 		var path = this.connect(paths[i], paths[j], 0.5, handle_len_rate, 600);
+    	// 		if (path) {
+    	// 			this.connections.appendTop(path);
+      //
+    	// 		}
+    	// 	}
+    	// }
     }
 
     BallSack.prototype.connect = function(ball1, ball2, v, handle_len_rate, maxDistance) {
@@ -324,6 +339,7 @@
     	var pi2 = Math.PI / 2;
     	var d = center1.getDistance(center2);
     	var u1, u2;
+
 
     	if (radius1 == 0 || radius2 == 0)
     		return;
@@ -362,17 +378,79 @@
     	radius1 *= d2;
     	radius2 *= d2;
 
+      // draw a patch between point one and point two
     	var path = new Path({
     		segments: [p1a, p2a, p2b, p1b],
     		style: ball1.style,
     		closed: true
     	});
+
+      path.selected = true
+
+      // lets create the arc-form for each path;
     	var segments = path.segments;
     	segments[0].handleOut = getVector(angle1a - pi2, radius1);
     	segments[1].handleIn = getVector(angle2a + pi2, radius2);
     	segments[2].handleOut = getVector(angle2b - pi2, radius2);
     	segments[3].handleIn = getVector(angle1b + pi2, radius1);
+
     	return path;
+    }
+
+    BallSack.prototype.testConnect = function(leftBall, rightBall, root, v, handle_len_rate, maxDistance) {
+
+      var leftBallCenter = leftBall.position;
+      var rightBallCenter = rightBall.position;
+      var rootCenter = root.position;
+
+      var leftBallRadius = leftBall.bounds.width / 2;
+      var rightBallRadius = rightBall.bounds.width / 2;
+      var rootBallRadius = root.bounds.width / 2;
+
+      var pi2 = Math.PI / 2;
+      var leftToRoot = rootCenter.getDistance(leftBallCenter);
+      var rightToRoot = rootCenter.getDistance(rightBallCenter);
+      var leftToRight = leftBallCenter.getDistance(rightBallCenter);
+      var u1, u2;
+
+      if (leftBallRadius == 0 || rightBallRadius == 0 || rootBallRadius == 0)
+        return;
+
+      console.log(leftToRoot)
+
+      // if (d < radius1 + radius2) { // case circles are overlapping
+      //   u1 = Math.acos((radius1 * radius1 + d * d - radius2 * radius2) /
+      //       (2 * radius1 * d));
+      //   u2 = Math.acos((radius2 * radius2 + d * d - radius1 * radius1) /
+      //       (2 * radius2 * d));
+      // } else {
+      //   u1 = 0;
+      //   u2 = 0;
+      // }
+
+      u1 = 0;
+      u2 = 0;
+
+      var angle1 = (rootCenter - leftBallCenter).getAngleInRadians();
+      var angle2 = Math.acos((leftBallRadius - rootBallRadius) / leftToRoot);
+      var angle1a = angle1 + 0 + (angle2 - 0) * v;
+
+      var angle1b = angle1 - 0 - (angle2 - 0) * v;
+      // var angle2a = angle1 + Math.PI - u2 - (Math.PI - u2 - angle2) * v;
+      var angle2b = angle1 - Math.PI + u2 + (Math.PI - u2 - angle2) * v;
+      // var p1a = leftBallCenter + getVector(angle1a, leftBallRadius);
+      var p1b = leftBallCenter + getVector(angle1b, leftBallRadius);
+      // var p2a = center2 + getVector(angle2a, radius2);
+      var p2b = rootCenter + getVector(angle2b, rootBallRadius);
+      console.log(p2b)
+      // draw a patch between point one and point two
+      // var path = new Path({
+      //   segments: [p1a, p2a, p2b, p1b],
+      //   style: ball1.style,
+      //   closed: true
+      // });
+
+
     }
 
     return BallSack;
