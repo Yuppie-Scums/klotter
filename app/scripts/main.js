@@ -11,7 +11,7 @@
 (function() {
 
   view.viewSize = new Size(500, 500);
-  var debug = false;
+  var debug = true;
 
   // Helper object that contains modifaction methods
 
