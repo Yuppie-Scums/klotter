@@ -8,7 +8,6 @@
 // var noise = new ClassicalNoise();
 // var noiseSeed = Math.random() * 255;
 
-(function() {
 
   view.viewSize = new Size(1000, 1000);
   var debug = false;
@@ -195,7 +194,8 @@
         rightPosition: [250, 400],
         style: this.style,
         type: 'left',
-        size: 50
+        size: 80,
+        rootSize: 40
       });
 
       // this.leftBall = new Ball({
@@ -261,7 +261,11 @@
     	});
     }
 
-    function returnPoint() {}
+    function returnPoint() {
+
+
+
+    }
 
     BallSack.prototype = new Helpers();
     BallSack.prototype.constructor = BallSack;
@@ -270,11 +274,12 @@
       this.o = o;
 
       // we need to add root position and left and right position
+      this.triangle;
 
       this.connections = new Group();
       this.circlePaths = [];
 
-      this.topPosition = this.createShape(this.o.startPosition, this.o.size, 'root')
+      this.topPosition = this.createShape(this.o.startPosition, this.o.rootSize, 'root')
       this.circlePaths.push(this.topPosition);
 
       this.leftBall = this.createShape(this.o.leftPosition, this.o.size, 'left')
@@ -313,22 +318,58 @@
       return ball;
     }
 
+    BallSack.prototype.walk = function(event) {
+
+
+      var sinus = Math.sin(event.time * 3 + 0);
+      
+
+  		// Change the y position of the segment point:
+  		this.leftBall.position.x = sinus * 60 + this.o.leftPosition[0];
+      this.rightBall.position.x = sinus * 60 + this.o.rightPosition[0];
+
+
+      if(this.united) this.united.remove();
+
+      // this.united = this.triangle
+      //              .unite(this.connections.children[0])
+      //              .unite(this.connections.children[1])
+      //              .unite(this.connections.children[2])
+      //              .unite(this.circlePaths[0])
+      //              .unite(this.circlePaths[1])
+      //              .unite(this.circlePaths[2])
+
+
+    }
+
     BallSack.prototype.generateConnections = function(paths) {
       // Remove the last connection paths:
     	this.connections.children = [];
+      this.centers = []
 
-      this.testConnect(paths[1], paths[2], paths[0], 0.5, handle_len_rate, 600)
+      // this.testConnect(paths[1], paths[2], paths[0], 0.5, handle_len_rate, 600)
 
-    	// for (var i = 0, l = paths.length; i < l; i++) {
-    	// 	for (var j = i - 1; j >= 0; j--) {
-      //
-    	// 		var path = this.connect(paths[i], paths[j], 0.5, handle_len_rate, 600);
-    	// 		if (path) {
-    	// 			this.connections.appendTop(path);
-      //
-    	// 		}
-    	// 	}
-    	// }
+    	for (var i = 0, l = paths.length; i < l; i++) {
+
+        this.centers.push(paths[i].position)
+
+    		for (var j = i - 1; j >= 0; j--) {
+    			var path = this.connect(paths[i], paths[j], 0.6, handle_len_rate, 600);
+    			if (path) {
+    				this.connections.appendTop(path);
+
+    			}
+    		}
+    	}
+
+      if(this.triangle) this.triangle.remove()
+      this.triangle = new Path({
+        segments: this.centers,
+        closed: true
+      });
+
+      this.triangle.selected = debug
+
     }
 
     BallSack.prototype.connect = function(ball1, ball2, v, handle_len_rate, maxDistance) {
@@ -385,7 +426,7 @@
     		closed: true
     	});
 
-      path.selected = true
+      path.fullyselected = debug
 
       // lets create the arc-form for each path;
     	var segments = path.segments;
@@ -395,62 +436,6 @@
     	segments[3].handleIn = getVector(angle1b + pi2, radius1);
 
     	return path;
-    }
-
-    BallSack.prototype.testConnect = function(leftBall, rightBall, root, v, handle_len_rate, maxDistance) {
-
-      var leftBallCenter = leftBall.position;
-      var rightBallCenter = rightBall.position;
-      var rootCenter = root.position;
-
-      var leftBallRadius = leftBall.bounds.width / 2;
-      var rightBallRadius = rightBall.bounds.width / 2;
-      var rootBallRadius = root.bounds.width / 2;
-
-      var pi2 = Math.PI / 2;
-      var leftToRoot = rootCenter.getDistance(leftBallCenter);
-      var rightToRoot = rootCenter.getDistance(rightBallCenter);
-      var leftToRight = leftBallCenter.getDistance(rightBallCenter);
-      var u1, u2;
-
-      if (leftBallRadius == 0 || rightBallRadius == 0 || rootBallRadius == 0)
-        return;
-
-      console.log(leftToRoot)
-
-      // if (d < radius1 + radius2) { // case circles are overlapping
-      //   u1 = Math.acos((radius1 * radius1 + d * d - radius2 * radius2) /
-      //       (2 * radius1 * d));
-      //   u2 = Math.acos((radius2 * radius2 + d * d - radius1 * radius1) /
-      //       (2 * radius2 * d));
-      // } else {
-      //   u1 = 0;
-      //   u2 = 0;
-      // }
-
-      u1 = 0;
-      u2 = 0;
-
-      var angle1 = (rootCenter - leftBallCenter).getAngleInRadians();
-      var angle2 = Math.acos((leftBallRadius - rootBallRadius) / leftToRoot);
-      var angle1a = angle1 + 0 + (angle2 - 0) * v;
-
-      var angle1b = angle1 - 0 - (angle2 - 0) * v;
-      // var angle2a = angle1 + Math.PI - u2 - (Math.PI - u2 - angle2) * v;
-      var angle2b = angle1 - Math.PI + u2 + (Math.PI - u2 - angle2) * v;
-      // var p1a = leftBallCenter + getVector(angle1a, leftBallRadius);
-      var p1b = leftBallCenter + getVector(angle1b, leftBallRadius);
-      // var p2a = center2 + getVector(angle2a, radius2);
-      var p2b = rootCenter + getVector(angle2b, rootBallRadius);
-      console.log(p2b)
-      // draw a patch between point one and point two
-      // var path = new Path({
-      //   segments: [p1a, p2a, p2b, p1b],
-      //   style: ball1.style,
-      //   closed: true
-      // });
-
-
     }
 
     return BallSack;
@@ -501,19 +486,24 @@
 
   })()
 
-  new CreatePenis({})
+  var penis = new CreatePenis({})
 
+  var text = new PointText(new Point(30, 30));
+  text.fillColor = 'black';
 
-})()
+  text.content = 'Move your mouse over the view, to see its position';
 
-var text = new PointText(new Point(30, 30));
-text.fillColor = 'black';
-
-text.content = 'Move your mouse over the view, to see its position';
-
-function onMouseMove(event) {
-  console.log('calling')
-      // Each time the mouse is moved, set the content of
-      // the point text to describe the position of the mouse:
-      text.content = 'Your position is: ' + event.point.toString();
+  function onMouseMove(event) {
+    console.log('calling')
+        // Each time the mouse is moved, set the content of
+        // the point text to describe the position of the mouse:
+        text.content = 'Your position is: ' + event.point.toString();
   }
+
+  function onFrame(event) {
+    // Each frame, rotate the path by 3 degrees:
+    penis.ballSack.walk(event);
+    penis.ballSack.generateConnections(penis.ballSack.circlePaths);
+  }
+
+  console.log(penis)
