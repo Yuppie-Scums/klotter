@@ -8,10 +8,12 @@
 // var noise = new ClassicalNoise();
 // var noiseSeed = Math.random() * 255;
 
-(function() {
 
-  view.viewSize = new Size(500, 500);
-  var debug = true;
+  view.viewSize = new Size(1000, 1000);
+  var debug = false;
+  project.currentStyle = {
+    fillColor: 'black'
+  };
 
   // Helper object that contains modifaction methods
 
@@ -26,6 +28,8 @@
     }
 
     Helpers.prototype.addPoints = function(numbers) {
+
+      console.log(this)
 
       this.flatten(numbers);
       this.smooth();
@@ -182,13 +186,15 @@
     Penis.prototype.init = function() {
 
 
-      BallSack
-
       this.ballSack = new BallSack({
         position: this.o.startPosition,
+        startPosition: [200, 150],
+        leftPosition: [150, 400],
+        rightPosition: [250, 400],
         style: this.style,
         type: 'left',
-        size: 50
+        size: Math.floor(Math.random() * 60 ) + 40,
+        rootSize: Math.floor(Math.random() * 60 ) + 40
       });
 
       // this.leftBall = new Ball({
@@ -254,6 +260,12 @@
     	});
     }
 
+    function returnPoint() {
+
+
+
+    }
+
     BallSack.prototype = new Helpers();
     BallSack.prototype.constructor = BallSack;
 
@@ -261,20 +273,22 @@
       this.o = o;
 
       // we need to add root position and left and right position
+      this.triangle;
 
       this.connections = new Group();
       this.circlePaths = [];
 
-      this.topPosition = this.createShape(this.o.position, this.o.size)
+      this.topPosition = this.createShape(this.o.startPosition, this.o.rootSize, 'root')
       this.circlePaths.push(this.topPosition);
 
-      this.leftBall = this.createShape(this.o.position, this.o.size)
+      this.leftBall = this.createShape(this.o.leftPosition, this.o.size, 'left')
       this.circlePaths.push(this.leftBall);
 
-      this.rightBall = this.createShape(this.o.position, this.o.size)
+      this.rightBall = this.createShape(this.o.rightPosition, this.o.size, 'right')
       this.circlePaths.push(this.rightBall);
 
       this.generateConnections(this.circlePaths);
+
       // this.ball = this.alterShape.call(this.ball, 10)
       // this.ball = this.addPoints.call(this.ball, 15)
       // this.ball = this.movePoint.call(this.ball, 3);
@@ -283,7 +297,7 @@
 
     }
 
-    BallSack.prototype.createShape = function(position, size) {
+    BallSack.prototype.createShape = function(position, size, name) {
 
       var alpha = Math.random()
       var ball;
@@ -295,25 +309,95 @@
 
       ball.strokeColor = new Color(0, 0, 0);
       ball.strokeWidth = 1;
-      ball.fillColor = new Color(250, 250, 250);
+      ball.name = name
+      // ball.fillColor = new Color(250, 250, 250);
 
       ball.selected = debug;
 
       return ball;
     }
 
+    BallSack.prototype.walk = function(event) {
+
+
+      var sinus = Math.sin(event.time * 3 + 0);
+
+
+  		// Change the y position of the segment point:
+  		this.leftBall.position.x = sinus * 60 + this.o.leftPosition[0];
+      this.rightBall.position.x = sinus * 60 + this.o.rightPosition[0];
+
+
+      if(this.united) this.united.remove();
+
+      // this.united = this.triangle
+      //              .unite(this.connections.children[0])
+      //              .unite(this.connections.children[1])
+      //              .unite(this.connections.children[2])
+      //              .unite(this.circlePaths[0])
+      //              .unite(this.circlePaths[1])
+      //              .unite(this.circlePaths[2])
+
+
+    }
+
     BallSack.prototype.generateConnections = function(paths) {
       // Remove the last connection paths:
     	this.connections.children = [];
+      this.centers = []
+
+      // this.testConnect(paths[1], paths[2], paths[0], 0.5, handle_len_rate, 600)
 
     	for (var i = 0, l = paths.length; i < l; i++) {
+
+        this.centers.push(paths[i].position)
+
     		for (var j = i - 1; j >= 0; j--) {
-    			var path = this.connect(paths[i], paths[j], 0.5, handle_len_rate, 300);
+    			var path = this.connect(paths[i], paths[j], 0.6, handle_len_rate, 600);
     			if (path) {
     				this.connections.appendTop(path);
+
     			}
     		}
     	}
+
+      if(this.triangle) this.triangle.remove()
+      this.triangle = new Path({
+        segments: this.centers,
+        closed: true
+      });
+
+      this.triangle.selected = debug
+
+      // this.united = this.triangle
+      //              .unite(this.connections.children[0])
+      //              .unite(this.connections.children[1])
+      //              .unite(this.connections.children[2])
+      //              .unite(this.circlePaths[0])
+      //              .unite(this.circlePaths[1])
+      //              .unite(this.circlePaths[2])
+      //
+      // this.united.position.x = this.united.position.x + 400;
+      // this.united.fillColor = null;
+      // this.united.strokeColor = new Color(0, 0, 0, 0.4);
+      // this.united.strokeWidth = 1;
+
+
+
+      // this.united = this.alterShape.call(this.united, 10)
+      // this.united = this.addPoints.call(this.united, 15);
+      // this.united = this.movePoint.call(this.united, 3);
+
+      // this.unitedFirst = this.united.clone();
+      // this.unitedSecond = this.united.clone();
+      //
+      // this.unitedFirst = this.addPoints.call(this.united, 15);
+      // this.unitedFirst = this.movePoint.call(this.united, 3);
+      //
+      // this.unitedSecond = this.addPoints.call(this.united, 15);
+      // this.unitedSecond = this.movePoint.call(this.united, 3);
+
+
     }
 
     BallSack.prototype.connect = function(ball1, ball2, v, handle_len_rate, maxDistance) {
@@ -324,6 +408,7 @@
     	var pi2 = Math.PI / 2;
     	var d = center1.getDistance(center2);
     	var u1, u2;
+
 
     	if (radius1 == 0 || radius2 == 0)
     		return;
@@ -362,16 +447,22 @@
     	radius1 *= d2;
     	radius2 *= d2;
 
+      // draw a patch between point one and point two
     	var path = new Path({
     		segments: [p1a, p2a, p2b, p1b],
     		style: ball1.style,
     		closed: true
     	});
+
+      path.fullyselected = debug
+
+      // lets create the arc-form for each path;
     	var segments = path.segments;
     	segments[0].handleOut = getVector(angle1a - pi2, radius1);
     	segments[1].handleIn = getVector(angle2a + pi2, radius2);
     	segments[2].handleOut = getVector(angle2b - pi2, radius2);
     	segments[3].handleIn = getVector(angle1b + pi2, radius1);
+
     	return path;
     }
 
@@ -423,19 +514,24 @@
 
   })()
 
-  new CreatePenis({})
+  var penis = new CreatePenis({})
 
+  var text = new PointText(new Point(30, 30));
+  text.fillColor = 'black';
 
-})()
+  text.content = 'Move your mouse over the view, to see its position';
 
-var text = new PointText(new Point(30, 30));
-text.fillColor = 'black';
-
-text.content = 'Move your mouse over the view, to see its position';
-
-function onMouseMove(event) {
-  console.log('calling')
-      // Each time the mouse is moved, set the content of
-      // the point text to describe the position of the mouse:
-      text.content = 'Your position is: ' + event.point.toString();
+  function onMouseMove(event) {
+    console.log('calling')
+        // Each time the mouse is moved, set the content of
+        // the point text to describe the position of the mouse:
+        text.content = 'Your position is: ' + event.point.toString();
   }
+
+  function onFrame(event) {
+    // Each frame, rotate the path by 3 degrees:
+    // penis.ballSack.walk(event);
+    // penis.ballSack.generateConnections(penis.ballSack.circlePaths);
+  }
+
+  console.log(penis)
