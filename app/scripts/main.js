@@ -10,7 +10,7 @@
 
 
   view.viewSize = new Size(1000, 1000);
-  var debug = false;
+  var debug = true;
   project.currentStyle = {
     fillColor: 'black'
   };
@@ -121,6 +121,30 @@
 
     }
 
+    Helpers.prototype.removeTopSegment = function(segments) {
+
+      var i = 0;
+      var length = segments.length
+      var topSegment = null;
+      var segmentIndex = null
+
+      for (; i < length; i++) {
+
+          console.log(segments[i].point)
+
+          if (topSegment === null || segments[i].point.y < topSegment.y) {
+            topSegment = segments[i].point
+            segmentIndex = i
+          }
+
+      }
+
+      this.removeSegment(segmentIndex)
+
+      return topSegment;
+
+    }
+
     Helpers.prototype.movePoint = function(moveDistance) {
 
       var i = 0;
@@ -197,25 +221,12 @@
         rootSize: Math.floor(Math.random() * 60 ) + 40
       });
 
-      // this.leftBall = new Ball({
-      //   position: this.o.startPosition,
-      //   style: this.style,
-      //   type: 'left',
-      //   size: 50
-      // });
-      //
-      // this.rightBall = new Ball({
-      //   position: this.setAnglePosition(this.o.startPosition, this.o.viewAngle, this.o.shaftAngle),
-      //   style: this.style,
-      //   type: 'right',
-      //   size: 50
-      // });
-
       this.shaft = new Shaft({
-        position: [],
+        startPosition: [200, 150],
         style: this.style,
         type: 'normal',
-        size: 50
+        size: 80,
+        rootSize: 40
       })
 
     };
@@ -278,7 +289,7 @@
       this.connections = new Group();
       this.circlePaths = [];
 
-      this.topPosition = this.createShape(this.o.startPosition, this.o.rootSize, 'root')
+      this.topPosition = this.createShape(this.o.startPosition, this.o.rootSize, 'root', 1, 1)
       this.circlePaths.push(this.topPosition);
 
       this.leftBall = this.createShape(this.o.leftPosition, this.o.size, 'left')
@@ -288,16 +299,19 @@
       this.circlePaths.push(this.rightBall);
 
       this.generateConnections(this.circlePaths);
+      this.removeTopSegment.call(this.topPosition, this.topPosition.segments)
 
       // this.ball = this.alterShape.call(this.ball, 10)
       // this.ball = this.addPoints.call(this.ball, 15)
       // this.ball = this.movePoint.call(this.ball, 3);
 
+
+
       return this.ballSack
 
     }
 
-    BallSack.prototype.createShape = function(position, size, name) {
+    BallSack.prototype.createShape = function(position, size, name, xScale, yScale) {
 
       var alpha = Math.random()
       var ball;
@@ -310,6 +324,9 @@
       ball.strokeColor = new Color(0, 0, 0);
       ball.strokeWidth = 1;
       ball.name = name
+
+      ball.scale(xScale || 1, yScale || 1)
+      ball.data.isAlter = xScale ? true : false;
       // ball.fillColor = new Color(250, 250, 250);
 
       ball.selected = debug;
@@ -339,6 +356,7 @@
       //              .unite(this.circlePaths[2])
 
 
+
     }
 
     BallSack.prototype.generateConnections = function(paths) {
@@ -353,7 +371,7 @@
         this.centers.push(paths[i].position)
 
     		for (var j = i - 1; j >= 0; j--) {
-    			var path = this.connect(paths[i], paths[j], 0.6, handle_len_rate, 600);
+    			var path = this.connect(paths[i], paths[j], 0.9, handle_len_rate, 600);
     			if (path) {
     				this.connections.appendTop(path);
 
@@ -447,6 +465,17 @@
     	radius1 *= d2;
     	radius2 *= d2;
 
+      if (ball2.data.isAlter) {
+          console.log(getVector(angle2b, radius2))
+          console.log(angle2b)
+          console.log(radius2)
+          console.log(p2b)
+          console.log(center2)
+          console.log(radius2)
+          console.log('>>>>>')
+      }
+
+
       // draw a patch between point one and point two
     	var path = new Path({
     		segments: [p1a, p2a, p2b, p1b],
@@ -479,7 +508,7 @@
     function Shaft (o) {
       this.o = o;
 
-      this.shaft = this.createShape(this.o.position, this.o.size)
+      this.shaft = this.createShape(this.o.startPosition, this.o.rootSize, 600, 70)
 
       // this.ball = this.alterShape.call(this.ball, 10)
       // this.ball = this.addPoints.call(this.ball, 15)
@@ -491,21 +520,39 @@
 
     }
 
-    Shaft.prototype.createShape = function(position, size) {
+    Shaft.prototype.createShape = function(position, size, length, thickness) {
 
       var alpha = Math.random()
-      var shaft;
 
-      shaft = new Path.Circle({
-        center: position,
-        radius: size
-      });
+      var createPoint = function(x, y, name, length) {
+        return new Point({
+          x: x,
+          y: y,
+          // name: name
+        });
+      }
+
+
+      var shaft = new Path();
+
+      // shaft.segments = [
+      // 	[[position[0] + size, position[1]], null, null],
+      // 	[[position[0] + size + length, position[1]], null, vector],
+      // 	[[position[0] + size + length, position[1] - thickness], null, null],
+      //   [[position[0] + size, position[1] - thickness], null, null]
+      // ]
+
+          shaft.add(createPoint(position[0] + size, position[1], 'rootStart'))
+          shaft.add(createPoint(position[0] + size + length, position[1], 'tipBottom'))
+          shaft.add(createPoint(position[0] + size + length, position[1] - thickness, 'tipTop'))
+          shaft.add(createPoint(position[0] + size, position[1] - thickness, 'rootEnd'))
 
       shaft.strokeColor = new Color(0, 0, 0, alpha + 0.1);
       shaft.strokeWidth = 1;
-      shaft.fillColor = new Color(250, 250, 250);
+      shaft.fillColor = new Color(50, 50, 50);
 
-      shaft.selected = debug;
+      shaft.fullySelected = true;
+      console.log(shaft)
 
       return shaft;
     }
@@ -522,7 +569,7 @@
   text.content = 'Move your mouse over the view, to see its position';
 
   function onMouseMove(event) {
-    console.log('calling')
+
         // Each time the mouse is moved, set the content of
         // the point text to describe the position of the mouse:
         text.content = 'Your position is: ' + event.point.toString();
