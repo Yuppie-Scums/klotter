@@ -9,6 +9,11 @@
 // var noiseSeed = Math.random() * 255;
 
 
+    var obj = { x: 5 };
+    var gui = new dat.GUI();
+	  gui.add(obj, 'x');
+
+
   view.viewSize = new Size(1000, 1000);
   var debug = true;
   project.currentStyle = {
@@ -525,6 +530,26 @@
       console.log(shaft)
 
       return shaft;
+    }
+
+    Shaft.prototype.addCurve = function(segments) {
+
+      var i = 0;
+      var length = segments.length
+
+      var
+
+      for (; i < length; i++) {
+
+        this.segment[i].handleIn = new Point({
+          angle: 90,
+          length: 20
+        })
+
+      }
+
+      return this;
+
     }
 
     return Shaft;
