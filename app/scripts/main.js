@@ -174,7 +174,7 @@
 
     function Penis (o) {
 
-      this.o = {};
+      this.o = o || {};
 
       this.o.startPosition = [150, 150]; // apply random startposition later
       this.o.viewAngle = Math.floor(Math.random() * 180 ) + 1;
@@ -191,6 +191,11 @@
 
       this.o.shaftStyle = Math.round(Math.random()) ? 'european' : 'american';
       this.o.shaftAngle = (Math.floor(Math.random() * 130 ) + 1) + 25;
+      this.o.shaftThickness = 110;
+      this.o.shaftLength = 500;
+      this.o.TiptLength = 100;
+
+      this.o.rootSize = Math.floor(Math.random() * 60 ) + 40
 
       this.o = _.extend(this.o, o)
 
@@ -218,15 +223,17 @@
         style: this.style,
         type: 'left',
         size: Math.floor(Math.random() * 60 ) + 40,
-        rootSize: Math.floor(Math.random() * 60 ) + 40
+        rootSize: this.o.rootSize
       });
 
       this.shaft = new Shaft({
         startPosition: [200, 150],
         style: this.style,
         type: 'normal',
-        size: 80,
-        rootSize: 40
+        shaftLength: this.o.shaftLength,
+        shaftThickness: this.o.shaftThickness,
+        rootSize: this.o.rootSize,
+        tipLength: this.o.tipLength
       })
 
     };
@@ -508,13 +515,17 @@
     function Shaft (o) {
       this.o = o;
 
-      this.shaft = this.createShape(this.o.startPosition, this.o.rootSize, 600, 70)
+      this.shaft = this.createShape(this.o.startPosition, this.o.rootSize, this.o.shaftLength, this.o.shaftThickness)
 
       // this.ball = this.alterShape.call(this.ball, 10)
       // this.ball = this.addPoints.call(this.ball, 15)
       // this.ball = this.movePoint.call(this.ball, 3);
 
       this.shaft.type = o.type;
+      this.bend.call(this.shaft, this.shaft.segments)
+      // this.addTip.call(this.shaft, this.shaft.segments)
+      // this.addCurve.call(this.shaft, this.shaft.segments)
+
 
       return this.shaft
 
@@ -528,7 +539,6 @@
         return new Point({
           x: x,
           y: y,
-          // name: name
         });
       }
 
@@ -542,26 +552,91 @@
       //   [[position[0] + size, position[1] - thickness], null, null]
       // ]
 
-          shaft.add(createPoint(position[0] + size, position[1], 'rootStart'))
-          shaft.add(createPoint(position[0] + size + length, position[1], 'tipBottom'))
-          shaft.add(createPoint(position[0] + size + length, position[1] - thickness, 'tipTop'))
-          shaft.add(createPoint(position[0] + size, position[1] - thickness, 'rootEnd'))
+      shaft.add(createPoint(position[0] + size, position[1], 'rootStart'))
+      shaft.add(createPoint(position[0] + size + length, position[1], 'tipBottom'))
+      shaft.add(createPoint(position[0] + size + length, position[1] - thickness, 'tipTop'))
+      shaft.add(createPoint(position[0] + size, position[1] - thickness, 'rootEnd'))
 
       shaft.strokeColor = new Color(0, 0, 0, alpha + 0.1);
       shaft.strokeWidth = 1;
       shaft.fillColor = new Color(50, 50, 50);
 
       shaft.fullySelected = true;
-      console.log(shaft)
 
       return shaft;
+
+    }
+
+    Shaft.prototype.getVector = function(radians, length) {
+      return new Point({
+        // Convert radians to degrees:
+        angle: radians * 180 / Math.PI,
+        length: length
+      });
+    }
+
+    Shaft.prototype.bend = function(segments) {
+
+      var i = 0;
+      var length = segments.length
+
+      console.log(this.segments[1])
+
+      this.segments[1].point.y += 100
+      this.segments[2].point.y += 100
+
+      this.segments[1].handleIn = new Point({
+        angle: 230,
+        length: 150
+      })
+
+      this.segments[1].handleOut = new Point({
+        angle: 50,
+        length: 50
+      })
+
+      this.segments[2].handleOut = new Point({
+        angle: 230,
+        length: 150
+      })
+
+      this.segments[2].handleIn = new Point({
+        angle: 50,
+        length: 50
+      })
+
+      return this;
+
+    }
+
+    Shaft.prototype.addCurve = function(segments) {
+
+      var i = 0;
+      var length = segments.length
+
+      for (; i < length; i++) {
+
+        this.segments[i].handleIn = new Point({
+          angle: 90,
+          length: 20
+        })
+
+        this.segments[i].handleOut = new Point({
+          angle: 90,
+          length: 20
+        })
+
+      }
+
+      return this;
+
     }
 
     return Shaft;
 
   })()
 
-  var penis = new CreatePenis({})
+  var penis = new CreatePenis()
 
   var text = new PointText(new Point(30, 30));
   text.fillColor = 'black';
