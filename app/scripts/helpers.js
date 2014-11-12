@@ -125,12 +125,13 @@ window.Helpers = (function() {
 
     }
 
-    Helpers.prototype.getTopSegmentIndex = function(segments) {
+    Helpers.prototype.getTopSegmentIndex = function(segments, angle) {
 
       var i = 0;
       var length = segments.length
       var topSegment = null;
       var segmentIndex = null
+      var deduct = angle <= 0 ? 1 : 0
 
       for (; i < length; i++) {
 
@@ -141,7 +142,7 @@ window.Helpers = (function() {
 
       }
 
-      return segmentIndex;
+      return segmentIndex - deduct;
 
     }
 

@@ -1,13 +1,5 @@
 
 
-//include a perlin noise class from github
-//http://en.wikipedia.org/wiki/Perlin_noise
-// include("https://gist.github.com/banksean/304522/raw/f306edfdab80d72795565a5fcdeb4eb86368fee0/perlin-noise-classical.js")
-
-//initialize a perlin noise instance
-// var noise = new ClassicalNoise();
-// var noiseSeed = Math.random() * 255;
-
   var noise = new window.ClassicalNoise();
   var noiseSeed = Math.random() * 255;
 
@@ -28,7 +20,7 @@
 
       this.o = o || {};
 
-      this.startPosition = [200, 150]; // apply random startposition later
+      this.startPosition = [200, 300]; // apply random startposition later
       this.viewAngle = Math.floor(Math.random() * 180 ) + 1;
 
 
@@ -37,12 +29,16 @@
       // the further down the second circle will be.
       // the we apply the size of the the ball to the second cirlce.
       // finally we attach the the two circles
-      this.ballsWeight = Math.floor(Math.random() * 100 ) + 1;
-      this.ballsSize = this.o.ballStyle === 'firm' && Math.round(Math.random()) ? Math.floor(Math.random() * 20 ) + 10 : Math.floor(Math.random() * 10 ) + 1;
+      this.ballsWeight = Math.floor(Math.random() * 100 ) + 500;
+      this.ballsSize = Math.floor(Math.random() * 60 ) + 40;
+      this.leftBallPosition = 150
+      this.rightBallPosition = 250
+      this.sackDencity = 0;
 
 
       this.shaftStyle = Math.round(Math.random()) ? 'european' : 'american';
       this.shaftAngle = (Math.floor(Math.random() * 130 ) + 1) + 25;
+      this.shaftCurve = (Math.floor(Math.random() * 130 ) + 1) + 25;
       this.shaftThickness = 110;
       this.shaftLength = 500;
       this.TiptLength = 100;
@@ -50,11 +46,8 @@
       this.rootSize = Math.floor(Math.random() * 60 ) + 40
 
       this.group = new Group();
-
-      this.leftBall = null;
-      this.rightBal = null;
+      this.ballSack = null;
       this.shaft = null;
-      this.tip = null;
 
       this.init();
       this.events();
@@ -65,21 +58,17 @@
 
 
       this.ballSack = new BallSack({
-        position: [150, 150],
         startPosition: this.startPosition,
-        leftPosition: [150, 400],
-        rightPosition: [250, 400],
-        style: this.style,
-        type: 'left',
-        size: Math.floor(Math.random() * 60 ) + 40,
+        leftPosition: [this.leftBallPosition, this.ballsWeight],
+        rightPosition: [this.rightBallPosition, this.ballsWeight],
+        size: this.ballsSize,
         rootSize: this.rootSize
       });
 
       this.shaft = new Shaft({
         startPosition: this.startPosition,
-        style: this.style,
-        type: 'normal',
         shaftAngle: this.shaftAngle,
+        shaftCurve: this.shaftCurve,
         shaftLength: this.shaftLength,
         shaftThickness: this.shaftThickness,
         rootSize: this.rootSize,
@@ -109,109 +98,97 @@
       this.united.fillColor = null;
       this.united.strokeColor = new Color(0, 0, 0, 0.4);
       this.united.strokeWidth = 1;
+      this.united.fullySelected = false;
 
-      var index = this.getTopSegmentIndex(this.united.segments)
-      var i = 0;
+      var times = this.getTopSegmentIndex(this.united.segments, this.shaftAngle)
 
-      for (; i < index - 1; i++) {
-        this.pushShift(this.united.segments)
-      }
+      this.pushShiftSegments(this.united.segments, times, 2)
 
       this.united.removeSegment(0)
-      this.united.removeSegment(this.united.segments.length - 1)
-
 
       this.applyNoiseToPath(this.united, 6, 40.0, 6.0);
 
-      var shakyOutlinesGroup = this.united.clone();
-      shakyOutlinesGroup.strokeWidth = 0.35;
-      shakyOutlinesGroup.fillColor = undefined; //remove fill
-
-      //apply some more noise to the cloned group
-      this.applyNoiseToPath(shakyOutlinesGroup, 6, 10.0, 4.0);
-
-      var shakyOutlinesGroup2 = this.united.clone();
-      shakyOutlinesGroup2.strokeWidth = 0.55;
-      shakyOutlinesGroup2.fillColor = undefined; //remove fill
-
-      //apply some more noise to the cloned group
-      this.applyNoiseToPath(shakyOutlinesGroup2, 5, 16.0, 4.0);
+      var shakyOutlinesGroup1 = this.copyAndApplyNoise('united', 0.35, 6, 10.0, 4.0)
+      var shakyOutlinesGroup2 = this.copyAndApplyNoise('united', 0.55, 5, 16.0, 4.0)
 
     }
 
-    Penis.prototype.pushShift = function(array) {
-      array.push(array.shift());
+    Penis.prototype.pushShiftSegments = function(array, length, times, back) {
+
+      var i = 0;
+      var directtion = back
+
+      for (; i < length - 1; i++) {
+        array.push(array.shift());
+      }
+
+      this.united.removeSegment(this.united.segments.length - 1)
+      this.united.removeSegment(this.united.segments.length)
+
     }
 
-    Penis.prototype.applyNoiseToPath = function(_path, _sampleDist, _noiseDiv, _noiseScale) {
+    Penis.prototype.copyAndApplyNoise = function(source, strokWidth, sampleDist, noiseDiv, noiseScale) {
+      var path = this[source].clone();
+      path.strokeWidth = strokWidth;
+      path.fillColor = undefined; //remove fill
+
+      //apply some more noise to the cloned group
+      this.applyNoiseToPath(path, sampleDist, noiseDiv, noiseScale);
+
+      return path;
+    }
+
+    Penis.prototype.applyNoiseToPath = function(path, sampleDist, noiseDiv, noiseScale) {
 
     var self = this;
 
-    if(_path instanceof Group) {
-      for(var i = 0; i < _path.children.length; i++) {
-        self.applyNoiseToPath(_path.children[i], _sampleDist, _noiseDiv, _noiseScale);
+    if(path instanceof Group) {
+
+      for(var i = 0; i < path.children.length; i++) {
+        self.applyNoiseToPath(path.children[i], sampleDist, noiseDiv, noiseScale);
       }
+
     } else {
-        if(_sampleDist < _path.length) {
-          _path.flatten(_sampleDist);
+
+        if(sampleDist < path.length) {
+          path.flatten(sampleDist);
         }
 
-        for(var i = 0; i < _path.segments.length; i++) {
-            var noiseX = noise.noise(_path.segments[i].point.x / _noiseDiv,
-                _path.segments[i].point.y / _noiseDiv,
+        for(var i = 0; i < path.segments.length; i++) {
+            var noiseX = noise.noise(path.segments[i].point.x / noiseDiv,
+                path.segments[i].point.y / noiseDiv,
                 noiseSeed);
-            var noiseY = noise.noise(_path.segments[i].point.y / _noiseDiv,
+            var noiseY = noise.noise(path.segments[i].point.y / noiseDiv,
                 noiseSeed,
-                _path.segments[i].point.x / _noiseDiv);
+                path.segments[i].point.x / noiseDiv);
 
-            _path.segments[i].point = _path.segments[i].point + new Point(noiseX, noiseY) * _noiseScale;
+            path.segments[i].point = path.segments[i].point + new Point(noiseX, noiseY) * noiseScale;
         }
-        _path.smooth();
+        path.smooth();
       }
 
     }
 
-    Penis.prototype.onFrame = function(event) {
+    Penis.prototype.update = function(event) {
 
       var self = this;
       this.shaft.changeSize({
         startPosition: this.startPosition,
-        style: this.style,
-        type: 'normal',
         shaftAngle: this.shaftAngle,
+        shaftCurve: this.shaftCurve,
         shaftLength: this.shaftLength,
         shaftThickness: this.shaftThickness,
         rootSize: this.rootSize,
-        tipLength: this.tipLength
       })
 
+      this.ballSack.changeSize({
+        startPosition: this.startPosition,
+        leftPosition: [this.leftBallPosition, this.ballsWeight],
+        rightPosition: [this.rightBallPosition, this.ballsWeight],
+        size: this.ballsSize,
+        rootSize: this.rootSize
+      })
 
-
-      // Change the y position of the segment point:
-      // this.ballSack.leftBall.position.x = sinus * self.p + this.ballSack.o.leftPosition[0];
-      // this.ballSack.rightBall.position.x = sinus * self.p + this.ballSack.o.rightPosition[0];
-      // this.ballSack.generateConnections(this.ballSack.circlePaths);
-      //
-
-    }
-
-    Penis.prototype.setAnglePosition = function(startingPoint, viewAngle, shaftAngle) {
-
-      var newStartingPoint = startingPoint;
-
-      if (viewAngle === 'left') {
-        newStartingPoint[0] = startingPoint[0] + Math.floor(Math.random() * 10) + 10;
-      } else {
-        newStartingPoint[0] = startingPoint[0] - Math.floor(Math.random() * 10) + 10;
-      }
-
-      // if (shaftAngle >= 70) {
-      //   newStartingPoint[1] = startingPoint[1] + Math.floor(Math.random() * 10) + 10;
-      // } else {
-      //   newStartingPoint[1] = startingPoint[1] - Math.floor(Math.random() * 10) + 10;
-      // }
-
-      return newStartingPoint;
     }
 
     return Penis;
@@ -222,7 +199,6 @@
 
   var text = new PointText(new Point(30, 30));
   text.fillColor = 'black';
-
   text.content = 'Move your mouse over the view, to see its position';
 
   function onMouseMove(event) {
@@ -232,45 +208,26 @@
         text.content = 'Your position is: ' + event.point.toString();
   }
 
-  function onFrame(event) {
-    // Each frame, rotate the path by 3 degrees:
-
-    // penis.ballSack.generateConnections(penis.ballSack.circlePaths);
-  }
-
-  // this.o.startPosition = [150, 150]; // apply random startposition later
-  // this.o.viewAngle = Math.floor(Math.random() * 180 ) + 1;
-  // this.o.ballsWeight = Math.floor(Math.random() * 100 ) + 1;
-  // this.o.ballsSize = this.o.ballStyle === 'firm' && Math.round(Math.random()) ? Math.floor(Math.random() * 20 ) + 10 : Math.floor(Math.random() * 10 ) + 1;
-  // this.o.shaftStyle = Math.round(Math.random()) ? 'european' : 'american';
-  // this.o.shaftAngle = (Math.floor(Math.random() * 130 ) + 1) + 25;
-  // this.o.shaftThickness = 110;
-  // this.o.shaftLength = 500;
-  // this.o.TiptLength = 100;
-  // this.o.rootSize = Math.floor(Math.random() * 60 ) + 40
-  // this.o = _.extend(this.o, o)
-  // this.group = new Group();
-  // this.leftBall = null;
-  // this.rightBal = null;
-  // this.shaft = null;
-  // this.tip = null;
-
-
   var gui = new dat.GUI();
   var GlobalFolder = gui.addFolder('Global');
   GlobalFolder.add(penis, 'draw')
+  GlobalFolder.add(penis, 'update');
 
   GlobalFolder.open()
 
   var shaftFolder = gui.addFolder('Shaft');
   shaftFolder.add(penis, 'shaftThickness', 90, 150)
-  shaftFolder.add(penis, 'shaftAngle', -100, 200)
   shaftFolder.add(penis, 'shaftLength', 0, 1000)
-  shaftFolder.add(penis, 'TiptLength')
-  shaftFolder.add(penis, 'p', 0, 50)
-  shaftFolder.add(penis, 'onFrame');
+  shaftFolder.add(penis, 'shaftAngle', -100, 200)
+  shaftFolder.add(penis, 'shaftCurve')
 
   shaftFolder.open()
 
-  var ballSackFolder = gui.addFolder('Sack');
+  var ballSackFolder = gui.addFolder('balls');
 
+  ballSackFolder.add(penis, 'leftBallPosition', 100, 300)
+  ballSackFolder.add(penis, 'rightBallPosition', 100, 300)
+  ballSackFolder.add(penis, 'ballsWeight', 500, 600)
+  ballSackFolder.add(penis, 'ballsSize', 40, 100)
+
+  ballSackFolder.open()
