@@ -43,7 +43,7 @@ window.BallSack = (function (o) {
 
     this.generateConnections(this.circlePaths);
 
-    return this.ballSack
+    return this
 
   }
 
@@ -72,6 +72,8 @@ window.BallSack = (function (o) {
 
   BallSack.prototype.changeSize = function(o) {
 
+    this.o = o;
+
     var lastSize = (this.leftBall.bounds.topRight.x - this.leftBall.bounds.topLeft.x) / 2;
     var currentSize = o.size;
 
@@ -98,7 +100,7 @@ window.BallSack = (function (o) {
       this.centers.push(paths[i].position)
 
         for (var j = i - 1; j >= 0; j--) {
-            var path = this.connect(paths[i], paths[j], v, handle_len_rate, 600);
+            var path = this.connect(paths[i], paths[j], this.o.sackVelocity, this.o.sackHandleLengthRate, 600);
             if (path) {
                 this.connections.appendTop(path);
 

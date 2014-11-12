@@ -30,10 +30,11 @@
       // the we apply the size of the the ball to the second cirlce.
       // finally we attach the the two circles
       this.ballsWeight = Math.floor(Math.random() * 100 ) + 500;
-      this.ballsSize = Math.floor(Math.random() * 60 ) + 40;
+      this.ballsSize = Math.floor(Math.random() * 40 ) + 80;
       this.leftBallPosition = 150
       this.rightBallPosition = 250
-      this.sackDencity = 0;
+      this.sackVelocity = 0.9;
+      this.sackHandleLengthRate = 5.4
 
 
       this.shaftStyle = Math.round(Math.random()) ? 'european' : 'american';
@@ -43,7 +44,7 @@
       this.shaftLength = 500;
       this.TiptLength = 100;
 
-      this.rootSize = Math.floor(Math.random() * 60 ) + 40
+      this.rootSize = Math.floor(Math.random() * 60 ) + 20
 
       this.group = new Group();
       this.ballSack = null;
@@ -62,6 +63,8 @@
         leftPosition: [this.leftBallPosition, this.ballsWeight],
         rightPosition: [this.rightBallPosition, this.ballsWeight],
         size: this.ballsSize,
+        sackVelocity: this.sackVelocity,
+        sackHandleLengthRate: this.sackHandleLengthRate,
         rootSize: this.rootSize
       });
 
@@ -73,6 +76,17 @@
         shaftThickness: this.shaftThickness,
         rootSize: this.rootSize,
         tipLength: this.tipLength
+      })
+
+      this.ballHair = new BallHair({
+        left: this.leftBallPosition,
+        right: this.rightBallPosition,
+        top: this.ballsWeight,
+        size: this.ballsSize,
+      })
+
+      this.Pubes = new Pubes({
+
       })
 
     };
@@ -97,7 +111,7 @@
       this.united.position.x = this.united.position.x + 1000;
       this.united.fillColor = null;
       this.united.strokeColor = new Color(0, 0, 0, 0.4);
-      this.united.strokeWidth = 1;
+      this.united.strokeWidth = 1.5;
       this.united.fullySelected = false;
 
       var times = this.getTopSegmentIndex(this.united.segments, this.shaftAngle)
@@ -185,6 +199,8 @@
         startPosition: this.startPosition,
         leftPosition: [this.leftBallPosition, this.ballsWeight],
         rightPosition: [this.rightBallPosition, this.ballsWeight],
+        sackVelocity: this.sackVelocity,
+        sackHandleLengthRate: this.sackHandleLengthRate,
         size: this.ballsSize,
         rootSize: this.rootSize
       })
@@ -210,8 +226,8 @@
 
   var gui = new dat.GUI();
   var GlobalFolder = gui.addFolder('Global');
-  GlobalFolder.add(penis, 'draw')
   GlobalFolder.add(penis, 'update');
+  GlobalFolder.add(penis, 'draw')
 
   GlobalFolder.open()
 
@@ -228,6 +244,8 @@
   ballSackFolder.add(penis, 'leftBallPosition', 100, 300)
   ballSackFolder.add(penis, 'rightBallPosition', 100, 300)
   ballSackFolder.add(penis, 'ballsWeight', 500, 600)
-  ballSackFolder.add(penis, 'ballsSize', 40, 100)
+  ballSackFolder.add(penis, 'ballsSize', 80, 120)
+  ballSackFolder.add(penis, 'sackVelocity', 0.7, 0.9)
+  ballSackFolder.add(penis, 'sackHandleLengthRate', 3.0, 6.0)
 
   ballSackFolder.open()

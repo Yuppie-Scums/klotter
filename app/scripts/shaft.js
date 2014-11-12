@@ -59,16 +59,20 @@ window.Shaft = (function (o) {
 
   Shaft.prototype.changeSize = function(o) {
 
-    var vector = this.shaft.segments[1].point - this.shaft.segments[0].point
+    var updatedpoints1 = this.shaft.segments[1].point;
+    updatedpoints1.x = o.startPosition[0] + o.shaftLength + o.rootSize;
+    updatedpoints1.y = o.startPosition[1] + o.shaftAngle
+
+    var vector = updatedpoints1 - this.shaft.segments[0].point
     var angle1;
     var angle2;
 
     if (vector.angle <= 0 ) {
-      angle1 = Math.abs(vector.angle * 2)
+      angle1 = Math.abs(vector.angle * Math.PI)
       angle2 = 0
     } else {
       angle1 = 0
-      angle2 = Math.abs(vector.angle * 2)
+      angle2 = Math.abs(vector.angle * Math.PI)
     }
 
     this.shaft.segments[0].point.y = o.startPosition[1]
@@ -86,8 +90,6 @@ window.Shaft = (function (o) {
   }
 
   Shaft.prototype.applyCurves = function(curve, shaftLength) {
-
-    console.log(shaftLength)
 
     var vector = this.shaft.segments[1].point - this.shaft.segments[0].point
     var angle;
@@ -118,31 +120,6 @@ window.Shaft = (function (o) {
       angle: angle + curve,
       length: 50
     })
-
-    console.log(this.shaft.segments[1])
-    console.log(this.shaft.segments[0])
-
-    console.log(vector.length)
-    console.log(vector.angle)
-    console.log(this.shaft.segments[1].point.angle)
-
-  }
-
-  Shaft.prototype.addCurve = function(segments) {
-
-    var i = 0;
-    var length = segments.length
-
-    for (; i < length; i++) {
-
-      this.segment[i].handleIn = new Point({
-        angle: 90,
-        length: 20
-      })
-
-    }
-
-    return this;
 
   }
 

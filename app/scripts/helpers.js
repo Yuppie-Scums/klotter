@@ -11,14 +11,14 @@ window.Helpers = (function() {
       this.test = 'test'
     }
 
-    Helpers.prototype.addPoints = function(numbers) {
-
-      this.flatten(numbers);
-      this.smooth();
-
-      return this;
-
-    }
+    // Helpers.prototype.addPoints = function(numbers) {
+    //
+    //   this.flatten(numbers);
+    //   this.smooth();
+    //
+    //   return this;
+    //
+    // }
 
     Helpers.prototype.findCenterfromSegments = function(segments) {
 
@@ -58,6 +58,7 @@ window.Helpers = (function() {
     }
 
     Helpers.prototype.findCenterfromPosition = function(position, type) {
+
       var yPosition = (((position.center[1] - position.positions.top) / 2) + position.positions.top)
       var xPosition;
 

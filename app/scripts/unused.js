@@ -16,3 +16,21 @@ Penis.prototype.setAnglePosition = function(startingPoint, viewAngle, shaftAngle
 
   return newStartingPoint;
 }
+
+Shaft.prototype.addCurve = function(segments) {
+
+  var i = 0;
+  var length = segments.length
+
+  for (; i < length; i++) {
+
+    this.segment[i].handleIn = new Point({
+      angle: 90,
+      length: 20
+    })
+
+  }
+
+  return this;
+
+}
