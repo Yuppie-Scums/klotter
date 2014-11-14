@@ -44,11 +44,14 @@
       this.shaftLength = 500;
       this.TiptLength = 100;
 
-      this.rootSize = Math.floor(Math.random() * 60 ) + 20
+      this.rootSize = Math.floor(Math.random() * 20 ) + 60
 
       this.group = new Group();
       this.ballSack = null;
       this.shaft = null;
+
+      this.mainStroke = 2.5;
+      this.secondaryStroke = 1.35;
 
       this.init();
       this.events();
@@ -83,6 +86,7 @@
         right: this.rightBallPosition,
         top: this.ballsWeight,
         size: this.ballsSize,
+        stroke: this.mainStroke
       })
 
       this.Pubes = new Pubes({
@@ -97,6 +101,11 @@
 
     Penis.prototype.draw = function() {
 
+      this.drawGroup = new Group;
+
+      this.penis = this.shaft.shaft
+      this.hair = this.ballHair.ballHairGroup
+
       this.united = this.ballSack.triangle
                    .unite(this.ballSack.connections.children[0])
                    .unite(this.ballSack.connections.children[1])
@@ -104,14 +113,13 @@
                    .unite(this.ballSack.circlePaths[0])
                    .unite(this.ballSack.circlePaths[1])
                    .unite(this.ballSack.circlePaths[2])
-                   .unite(this.shaft.shaft)
 
 
       this.united.closed = false;
-      this.united.position.x = this.united.position.x + 1000;
+      // this.united.position.x = this.united.position.x + 1000;
       this.united.fillColor = null;
-      this.united.strokeColor = new Color(0, 0, 0, 0.4);
-      this.united.strokeWidth = 1.5;
+      this.united.strokeColor = new Color(0, 0, 0, 0.6);
+      this.united.strokeWidth = this.mainStroke;
       this.united.fullySelected = false;
 
       var times = this.getTopSegmentIndex(this.united.segments, this.shaftAngle)
@@ -120,10 +128,21 @@
 
       this.united.removeSegment(0)
 
-      this.applyNoiseToPath(this.united, 6, 40.0, 6.0);
+      this.applyNoiseToPath(this.united, 6, 80.0, 6.0);
 
-      var shakyOutlinesGroup1 = this.copyAndApplyNoise('united', 0.35, 6, 10.0, 4.0)
-      var shakyOutlinesGroup2 = this.copyAndApplyNoise('united', 0.55, 5, 16.0, 4.0)
+      var shakyOutlinesGroup1 = this.copyAndApplyNoise('united', this.secondaryStroke, 6, 10.0, 4.0)
+      var shakyOutlinesGroup2 = this.copyAndApplyNoise('united', this.secondaryStroke, 5, 16.0, 4.0)
+
+      var shakyOutlinesGroup3 = this.copyAndApplyNoise('penis', this.mainStroke, 6, 80.0, 6.0)
+      var shakyOutlinesGroup4 = this.copyAndApplyNoise('penis', this.secondaryStroke, 6, 10.0, 4.0)
+      var shakyOutlinesGroup5 = this.copyAndApplyNoise('penis', this.secondaryStroke, 5, 16.0, 4.0)
+
+      var shakyOutlinesGroup6 = this.copyAndApplyNoise('hair', this.mainStroke, 6, 80.0, 6.0)
+      var shakyOutlinesGroup7 = this.copyAndApplyNoise('hair', this.secondaryStroke, 5, 16.0, 4.0)
+
+      this.drawGroup.addChildren([this.united , shakyOutlinesGroup1, shakyOutlinesGroup2, shakyOutlinesGroup3, shakyOutlinesGroup4, shakyOutlinesGroup5, shakyOutlinesGroup6, shakyOutlinesGroup7])
+      this.drawGroup.position.x = this.drawGroup.position.x + 1000;
+      this.drawGroup.fillColor = '#fafafa'
 
     }
 
@@ -132,12 +151,12 @@
       var i = 0;
       var directtion = back
 
-      for (; i < length - 1; i++) {
+      for (; i < length; i++) {
         array.push(array.shift());
       }
 
-      this.united.removeSegment(this.united.segments.length - 1)
       this.united.removeSegment(this.united.segments.length)
+      // this.united.removeSegment(this.united.segments.length)
 
     }
 
@@ -245,7 +264,7 @@
   ballSackFolder.add(penis, 'rightBallPosition', 100, 300)
   ballSackFolder.add(penis, 'ballsWeight', 500, 600)
   ballSackFolder.add(penis, 'ballsSize', 80, 120)
-  ballSackFolder.add(penis, 'sackVelocity', 0.7, 0.9)
+  ballSackFolder.add(penis, 'sackVelocity', 0.7, 1.2)
   ballSackFolder.add(penis, 'sackHandleLengthRate', 3.0, 6.0)
 
   ballSackFolder.open()

@@ -37,13 +37,10 @@ window.Shaft = (function (o) {
     shaft.add(createPoint(position[0] + size + length, position[1] + this.o.shaftAngle - thickness))
     shaft.add(createPoint(position[0] + size, position[1] - thickness))
 
-    shaft.strokeColor = new Color(0, 0, 0, alpha + 0.1);
+    shaft.strokeColor = new Color(0, 0, 0, 0.6);
     shaft.strokeWidth = 1;
-    shaft.fillColor = new Color(50, 50, 50);
-    shaft.closed = true;
-
-    shaft.fullySelected = true;
-
+    shaft.fillColor = null;
+    shaft.closed = false;
 
     return shaft;
 

@@ -100,6 +100,11 @@ window.BallSack = (function (o) {
       this.centers.push(paths[i].position)
 
         for (var j = i - 1; j >= 0; j--) {
+
+            if (paths[i].name === 'right' && paths[j].name === 'left' || paths[i].name === 'left' && paths[j].name === 'right') {
+              continue
+            } 
+
             var path = this.connect(paths[i], paths[j], this.o.sackVelocity, this.o.sackHandleLengthRate, 600);
             if (path) {
                 this.connections.appendTop(path);
