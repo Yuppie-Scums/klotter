@@ -20,6 +20,10 @@ window.Helpers = (function() {
     //
     // }
 
+    Helpers.prototype.random = function(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
     Helpers.prototype.findCenterfromSegments = function(segments) {
 
       var i = 0;

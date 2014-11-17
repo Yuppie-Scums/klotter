@@ -120,6 +120,10 @@ window.Shaft = (function (o) {
 
   }
 
+  Shaft.prototype.tip = function() {
+
+  }
+
   return Shaft;
 
 })()

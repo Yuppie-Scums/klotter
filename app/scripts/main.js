@@ -20,6 +20,9 @@
 
       this.o = o || {};
 
+      this.penisGroup = new Group;
+      this.moveCords = [];
+
       this.startPosition = [200, 300]; // apply random startposition later
       this.viewAngle = Math.floor(Math.random() * 180 ) + 1;
 
@@ -41,7 +44,7 @@
       this.shaftAngle = (Math.floor(Math.random() * 130 ) + 1) + 25;
       this.shaftCurve = (Math.floor(Math.random() * 130 ) + 1) + 25;
       this.shaftThickness = 110;
-      this.shaftLength = 500;
+      this.shaftLength = 300;
       this.TiptLength = 100;
 
       this.rootSize = Math.floor(Math.random() * 20 ) + 60
@@ -81,16 +84,22 @@
         tipLength: this.tipLength
       })
 
-      this.ballHair = new BallHair({
+      this.hair = new Hair({
         left: this.leftBallPosition,
         right: this.rightBallPosition,
         top: this.ballsWeight,
         size: this.ballsSize,
-        stroke: this.mainStroke
+        stroke: this.mainStroke,
+        amount: 120
       })
 
-      this.Pubes = new Pubes({
-
+      this.pubes = new Hair({
+        left: this.startPosition[0] - this.rootSize / 3,
+        right: this.startPosition[0],
+        top: this.startPosition[1] - 50,
+        size: this.rootSize + this.rootSize / 3,
+        stroke: this.mainStroke,
+        amount: 60
       })
 
     };
@@ -99,12 +108,36 @@
 
     }
 
+    Penis.prototype.drawMany = function() {
+
+      for (var i = 0; i < 10; i++) {
+
+        var penis = this.draw();
+
+
+        var x = penis.position.x + (300 * i)
+        var y = penis.position.y + 0
+        var scale = Math.random()
+        var rotate = this.random(0, 360)
+
+        penis.rotate(scale, scale)
+        penis.scale(scale, scale)
+        penis.position = new Point(x, y)
+
+        this.penisGroup.addChild(penis)
+
+
+      }
+
+    }
+
     Penis.prototype.draw = function() {
 
-      this.drawGroup = new Group;
+      var drawGroup = new Group;
 
       this.penis = this.shaft.shaft
-      this.hair = this.ballHair.ballHairGroup
+      this.ballHair = this.hair.hairGroup
+      this.rootHair = this.pubes.hairGroup
 
       this.united = this.ballSack.triangle
                    .unite(this.ballSack.connections.children[0])
@@ -116,7 +149,6 @@
 
 
       this.united.closed = false;
-      // this.united.position.x = this.united.position.x + 1000;
       this.united.fillColor = null;
       this.united.strokeColor = new Color(0, 0, 0, 0.6);
       this.united.strokeWidth = this.mainStroke;
@@ -124,26 +156,37 @@
 
       var times = this.getTopSegmentIndex(this.united.segments, this.shaftAngle)
 
-      this.pushShiftSegments(this.united.segments, times, 2)
+      this.pushShiftSegments(this.united.segments, times, 1)
 
       this.united.removeSegment(0)
 
       this.applyNoiseToPath(this.united, 6, 80.0, 6.0);
 
-      var shakyOutlinesGroup1 = this.copyAndApplyNoise('united', this.secondaryStroke, 6, 10.0, 4.0)
-      var shakyOutlinesGroup2 = this.copyAndApplyNoise('united', this.secondaryStroke, 5, 16.0, 4.0)
+      var ballSack2 = this.copyAndApplyNoise('united', this.secondaryStroke, 6, 10.0, 4.0)
+      var ballSack3 = this.copyAndApplyNoise('united', this.secondaryStroke, 5, 16.0, 4.0)
 
-      var shakyOutlinesGroup3 = this.copyAndApplyNoise('penis', this.mainStroke, 6, 80.0, 6.0)
-      var shakyOutlinesGroup4 = this.copyAndApplyNoise('penis', this.secondaryStroke, 6, 10.0, 4.0)
-      var shakyOutlinesGroup5 = this.copyAndApplyNoise('penis', this.secondaryStroke, 5, 16.0, 4.0)
+      var shaft1 = this.copyAndApplyNoise('penis', this.mainStroke, 6, 100.0, 6.0)
+      var shaft2 = this.copyAndApplyNoise('penis', this.secondaryStroke, 6, 18.0, 4.0)
+      var shaft3 = this.copyAndApplyNoise('penis', this.secondaryStroke, 5, 22.0, 4.0)
 
-      var shakyOutlinesGroup6 = this.copyAndApplyNoise('hair', this.mainStroke, 6, 80.0, 6.0)
-      var shakyOutlinesGroup7 = this.copyAndApplyNoise('hair', this.secondaryStroke, 5, 16.0, 4.0)
+      var ballHair1 = this.copyAndApplyNoise('ballHair', this.mainStroke, 6, 80.0, 6.0)
+      // var ballHair2 = this.copyAndApplyNoise('ballHair', this.secondaryStroke, 5, 16.0, 4.0)
 
-      this.drawGroup.addChildren([this.united , shakyOutlinesGroup1, shakyOutlinesGroup2, shakyOutlinesGroup3, shakyOutlinesGroup4, shakyOutlinesGroup5, shakyOutlinesGroup6, shakyOutlinesGroup7])
-      this.drawGroup.position.x = this.drawGroup.position.x + 1000;
-      this.drawGroup.fillColor = '#fafafa'
+      var rootHair1 = this.copyAndApplyNoise('rootHair', this.mainStroke, 6, 80.0, 6.0)
+      // var rootHair2 = this.copyAndApplyNoise('rootHair', this.secondaryStroke, 5, 16.0, 4.0)
 
+      drawGroup.addChildren([this.united , ballSack2, ballSack3, shaft1, shaft2, shaft3, ballHair1, rootHair1])
+      drawGroup.position.x = drawGroup.position.x + 500;
+
+      return drawGroup
+
+    }
+
+    Penis.prototype.setMoveCords = function() {
+      return {
+        x : 0,
+        y: 0
+      }
     }
 
     Penis.prototype.pushShiftSegments = function(array, length, times, back) {
@@ -224,6 +267,34 @@
         rootSize: this.rootSize
       })
 
+      this.ballSack.changeSize({
+        startPosition: this.startPosition,
+        leftPosition: [this.leftBallPosition, this.ballsWeight],
+        rightPosition: [this.rightBallPosition, this.ballsWeight],
+        sackVelocity: this.sackVelocity,
+        sackHandleLengthRate: this.sackHandleLengthRate,
+        size: this.ballsSize,
+        rootSize: this.rootSize
+      })
+
+      this.hair.changeSize({
+        left: this.leftBallPosition,
+        right: this.rightBallPosition,
+        top: this.ballsWeight,
+        size: this.ballsSize,
+        stroke: this.mainStroke,
+        amount: 120
+      })
+
+      this.pubes.changeSize({
+        left: this.startPosition[0] - this.rootSize / 3,
+        right: this.startPosition[0],
+        top: this.startPosition[1] - 50,
+        size: this.rootSize + this.rootSize / 3,
+        stroke: this.mainStroke,
+        amount: 60
+      })
+
     }
 
     return Penis;
@@ -247,6 +318,7 @@
   var GlobalFolder = gui.addFolder('Global');
   GlobalFolder.add(penis, 'update');
   GlobalFolder.add(penis, 'draw')
+  GlobalFolder.add(penis, 'drawMany')
 
   GlobalFolder.open()
 
