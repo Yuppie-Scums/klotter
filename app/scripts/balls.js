@@ -1,4 +1,4 @@
-var debug = true;
+var debug = false;
 
 window.BallSack = (function (o) {
 
@@ -101,7 +101,7 @@ window.BallSack = (function (o) {
 
             if (paths[i].name === 'right' && paths[j].name === 'left' || paths[i].name === 'left' && paths[j].name === 'right') {
               continue
-            } 
+            }
 
             var path = this.connect(paths[i], paths[j], this.o.sackVelocity, this.o.sackHandleLengthRate, 600);
             if (path) {
