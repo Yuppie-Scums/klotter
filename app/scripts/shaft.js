@@ -8,11 +8,14 @@ window.Shaft = (function (o) {
   function Shaft (o) {
     this.o = o;
 
+    this.shaftGroup = new Group();
     this.shaft = this.createShape(this.o.startPosition, this.o.rootSize, this.o.shaftLength, this.o.shaftThickness)
-
+    this.shaftGroup.addChild(this.shaft)
     this.shaft.fillColor = 'black'
     this.shaft.type = o.type;
-    this.applyCurves(o.shaftCurve, o.shaftLength);
+    // this.applyCurves(o.shaftCurve, o.shaftLength);
+    this.tip = this.applytip(o)
+    this.shaftGroup.addChild(this.tip)
 
     return this
 
@@ -56,6 +59,57 @@ window.Shaft = (function (o) {
 
   Shaft.prototype.changeSize = function(o) {
 
+    var angles = this.getAngle(o);
+
+    this.shaft.segments[0].point.y = o.startPosition[1]
+    this.shaft.segments[1].point.y = o.startPosition[1] + o.shaftAngle
+    this.shaft.segments[2].point.y = o.startPosition[1] + o.shaftAngle - o.shaftThickness
+    this.shaft.segments[3].point.y = o.startPosition[1] - o.shaftThickness
+
+    this.shaft.segments[1].point.x = o.startPosition[0] + o.shaftLength + o.rootSize + angles.angle1
+    this.shaft.segments[2].point.x = o.startPosition[0] + o.shaftLength + o.rootSize + angles.angle2
+
+    var top = new Point(this.shaft.segments[2].point.x + angles.angle1, this.shaft.segments[2].point.y) ;
+    var bottom = new Point(this.shaft.segments[1].point.x + angles.angle1, this.shaft.segments[1].point.y);
+    
+    var vector = top - bottom;
+    var angle = vector.angle;
+    var middleVector = vector / 2;
+    var middle = new Point(top.x - middleVector.x, bottom.y - middleVector.y - o.shaftThickness);
+
+    this.tip.position = new Point(top.x - middleVector.x, bottom.y - middleVector.y - o.shaftThickness)
+    this.tip.rotate(angle + 90)
+
+    // this.applyCurves(o.shaftCurve, o.shaftLength);
+
+  }
+
+  Shaft.prototype.applytip = function(o) {
+
+    var angles = this.getAngle(o);
+
+    var top = new Point(this.shaft.segments[2].point.x + angles.angle1, this.shaft.segments[2].point.y) ;
+    var bottom = new Point(this.shaft.segments[1].point.x + angles.angle1, this.shaft.segments[1].point.y);
+    
+    var vector = top - bottom;
+    var angle = vector.angle;
+    var middleVector = vector / 2;
+    var middle = new Point(top.x - middleVector.x, bottom.y - middleVector.y - o.shaftThickness);
+   
+    var path = new Path.Circle(middle, o.shaftThickness / 2);
+    path.rotate(angle + 180)
+    path.strokeColor = new Color(0, 0, 0, 0.6);
+
+    path.fillColor = null;
+    path.scale(0.9, 0.9)
+    path.segments[3].remove()
+    path.closed = false;
+
+    return path
+
+  }
+
+  Shaft.prototype.getAngle = function(o) {
     var updatedpoints1 = this.shaft.segments[1].point;
     updatedpoints1.x = o.startPosition[0] + o.shaftLength + o.rootSize;
     updatedpoints1.y = o.startPosition[1] + o.shaftAngle
@@ -72,18 +126,10 @@ window.Shaft = (function (o) {
       angle2 = Math.abs(vector.angle * Math.PI)
     }
 
-    this.shaft.segments[0].point.y = o.startPosition[1]
-    this.shaft.segments[1].point.y = o.startPosition[1] + o.shaftAngle
-    this.shaft.segments[2].point.y = o.startPosition[1] + o.shaftAngle - o.shaftThickness
-    this.shaft.segments[3].point.y = o.startPosition[1] - o.shaftThickness
-
-    this.shaft.segments[1].point.x = o.startPosition[0] + o.shaftLength + o.rootSize + angle1
-    this.shaft.segments[2].point.x = o.startPosition[0] + o.shaftLength + o.rootSize + angle2
-
-
-
-    this.applyCurves(o.shaftCurve, o.shaftLength);
-
+    return {
+      angle1: angle1,
+      angle2: angle2,
+    }
   }
 
   Shaft.prototype.applyCurves = function(curve, shaftLength) {
@@ -98,20 +144,20 @@ window.Shaft = (function (o) {
       angle = Math.abs(vector.angle * 2)
     }
 
-    this.shaft.segments[1].handleIn = new Point({
-      angle: angle + 180 + curve,
-      length: shaftLength / 2
-    })
+    // this.shaft.segments[1].handleIn = new Point({
+    //   angle: angle + 180 + curve,
+    //   length: shaftLength / 2
+    // })
 
     this.shaft.segments[1].handleOut = new Point({
       angle: angle + curve,
       length: 50
     })
 
-    this.shaft.segments[2].handleOut = new Point({
-      angle: angle + 180 + curve,
-      length: shaftLength / 2
-    })
+    // this.shaft.segments[2].handleOut = new Point({
+    //   angle: angle + 180 + curve,
+    //   length: shaftLength / 2
+    // })
 
     this.shaft.segments[2].handleIn = new Point({
       angle: angle + curve,
