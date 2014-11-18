@@ -120,8 +120,12 @@ window.Shaft = (function (o) {
 
   }
 
-  Shaft.prototype.tip = function() {
+  Shaft.prototype.tip = function () {
 
+  }
+
+  Shaft.prototype.removeAll = function () {
+    this.shaft.remove();
   }
 
   return Shaft;

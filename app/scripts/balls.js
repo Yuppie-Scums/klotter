@@ -2,6 +2,7 @@ var debug = true;
 
 window.BallSack = (function (o) {
 
+  var color = null;
   var handle_len_rate = 5.4;
   var radius = 50;
   var v = 0.7;
@@ -15,8 +16,6 @@ window.BallSack = (function (o) {
   }
 
   function returnPoint() {
-
-
 
   }
 
@@ -43,13 +42,12 @@ window.BallSack = (function (o) {
 
     this.generateConnections(this.circlePaths);
 
-    return this
+    return this;
 
   }
 
   BallSack.prototype.createShape = function(position, size, name, xScale, yScale) {
 
-    var alpha = Math.random()
     var ball;
 
     ball = new Path.Circle({
@@ -63,7 +61,7 @@ window.BallSack = (function (o) {
 
     ball.scale(xScale || 1, yScale || 1)
     ball.data.isAlter = xScale ? true : false;
-    // ball.fillColor = new Color(250, 250, 250);
+    ball.fillColor = color;
 
     ball.selected = debug;
 
@@ -107,8 +105,7 @@ window.BallSack = (function (o) {
 
             var path = this.connect(paths[i], paths[j], this.o.sackVelocity, this.o.sackHandleLengthRate, 600);
             if (path) {
-                this.connections.appendTop(path);
-
+              this.connections.appendTop(path);
             }
         }
       }
@@ -189,6 +186,15 @@ window.BallSack = (function (o) {
 
     return path;
 
+  }
+
+  BallSack.prototype.removeAll = function(arguments) {
+    console.log(this.connections)
+    this.connections.remove()
+    this.triangle.remove()
+    this.topPosition.remove();
+    this.leftBall.remove();
+    this.rightBall.remove();
   }
 
   return BallSack;

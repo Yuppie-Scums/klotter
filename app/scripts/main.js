@@ -11,6 +11,8 @@
 
   var CreatePenis = (function () {
 
+    'use strict';
+
     Penis.prototype = new Helpers();
     Penis.prototype.constructor = Penis;
 
@@ -20,7 +22,7 @@
 
       this.o = o || {};
 
-      this.penisGroup = new Group;
+      this.penisGroup = new Group();
       this.moveCords = [];
 
       this.startPosition = [200, 300]; // apply random startposition later
@@ -82,7 +84,7 @@
         shaftThickness: this.shaftThickness,
         rootSize: this.rootSize,
         tipLength: this.tipLength
-      })
+      });
 
       this.hair = new Hair({
         left: this.leftBallPosition,
@@ -91,7 +93,7 @@
         size: this.ballsSize,
         stroke: this.mainStroke,
         amount: 120
-      })
+      });
 
       this.pubes = new Hair({
         left: this.startPosition[0] - this.rootSize / 3,
@@ -100,13 +102,13 @@
         size: this.rootSize + this.rootSize / 3,
         stroke: this.mainStroke,
         amount: 60
-      })
+      });
 
     };
 
     Penis.prototype.events = function() {
 
-    }
+    };
 
     Penis.prototype.drawMany = function() {
 
@@ -114,94 +116,139 @@
 
         var penis = this.draw();
 
+        var x = penis.position.x + (300 * i);
+        var y = penis.position.y + 0;
+        var scale = Math.random();
+        var rotate = this.random(0, 360);
 
-        var x = penis.position.x + (300 * i)
-        var y = penis.position.y + 0
-        var scale = Math.random()
-        var rotate = this.random(0, 360)
+        penis.rotate(scale, scale);
+        penis.scale(scale, scale);
+        penis.position = new Point(x, y);
 
-        penis.rotate(scale, scale)
-        penis.scale(scale, scale)
-        penis.position = new Point(x, y)
-
-        this.penisGroup.addChild(penis)
-
+        this.penisGroup.addChild(penis);
 
       }
 
-    }
+    };
 
     Penis.prototype.draw = function() {
 
-      var drawGroup = new Group;
+      var drawGroup = new Group();
 
-      this.penis = this.shaft.shaft
-      this.ballHair = this.hair.hairGroup
-      this.rootHair = this.pubes.hairGroup
+      this.penis = this.shaft.shaft;
+      this.ballHair = this.hair.hairGroup;
+      this.rootHair = this.pubes.hairGroup;
 
-      this.united = this.ballSack.triangle
-                   .unite(this.ballSack.connections.children[0])
-                   .unite(this.ballSack.connections.children[1])
-                   .unite(this.ballSack.connections.children[2])
-                   .unite(this.ballSack.circlePaths[0])
-                   .unite(this.ballSack.circlePaths[1])
-                   .unite(this.ballSack.circlePaths[2])
+      
 
+      var test = [this.ballSack.triangle, this.ballSack.connections.children[0], this.ballSack.connections.children[1], this.ballSack.connections.children[2]]
+                   // .unite()
+                   // .unite(this.ballSack.circlePaths[0])
+                   // .unite(this.ballSack.circlePaths[1])
+                   // .unite(this.ballSack.circlePaths[2])
 
-      this.united.closed = false;
-      this.united.fillColor = null;
-      this.united.strokeColor = new Color(0, 0, 0, 0.6);
-      this.united.strokeWidth = this.mainStroke;
-      this.united.fullySelected = false;
+      this.united = this.multiUnite(test);
 
-      var times = this.getTopSegmentIndex(this.united.segments, this.shaftAngle)
+      console.log(this.united)
 
-      this.pushShiftSegments(this.united.segments, times, 1)
+      // this.united.closed = false;
+      // this.united.fillColor = null;
+      // this.united.strokeColor = new Color(0, 0, 0, 0.6);
+      // this.united.strokeWidth = this.mainStroke;
+      // this.united.fullySelected = false;
 
-      this.united.removeSegment(0)
+      // var times = this.getTopSegmentIndex(this.united.segments, this.shaftAngle)
 
-      this.applyNoiseToPath(this.united, 6, 80.0, 6.0);
+      // this.pushShiftSegments(this.united.segments, times, 1);
 
-      var ballSack2 = this.copyAndApplyNoise('united', this.secondaryStroke, 6, 10.0, 4.0)
-      var ballSack3 = this.copyAndApplyNoise('united', this.secondaryStroke, 5, 16.0, 4.0)
+      // this.united.removeSegment(0);
 
-      var shaft1 = this.copyAndApplyNoise('penis', this.mainStroke, 6, 100.0, 6.0)
-      var shaft2 = this.copyAndApplyNoise('penis', this.secondaryStroke, 6, 18.0, 4.0)
-      var shaft3 = this.copyAndApplyNoise('penis', this.secondaryStroke, 5, 22.0, 4.0)
+      // this.applyNoiseToPath(this.united, 6, 80.0, 6.0);
 
-      var ballHair1 = this.copyAndApplyNoise('ballHair', this.mainStroke, 6, 80.0, 6.0)
-      // var ballHair2 = this.copyAndApplyNoise('ballHair', this.secondaryStroke, 5, 16.0, 4.0)
+      // var ballSack2 = this.copyAndApplyNoise('united', this.secondaryStroke, 6, 10.0, 4.0);
+      // var ballSack3 = this.copyAndApplyNoise('united', this.secondaryStroke, 5, 16.0, 4.0);
 
-      var rootHair1 = this.copyAndApplyNoise('rootHair', this.mainStroke, 6, 80.0, 6.0)
-      // var rootHair2 = this.copyAndApplyNoise('rootHair', this.secondaryStroke, 5, 16.0, 4.0)
+      // var shaft1 = this.copyAndApplyNoise('penis', this.mainStroke, 6, 100.0, 6.0);
+      // var shaft2 = this.copyAndApplyNoise('penis', this.secondaryStroke, 6, 18.0, 4.0);
+      // var shaft3 = this.copyAndApplyNoise('penis', this.secondaryStroke, 5, 22.0, 4.0);
 
-      drawGroup.addChildren([this.united , ballSack2, ballSack3, shaft1, shaft2, shaft3, ballHair1, rootHair1])
+      // var ballHair1 = this.copyAndApplyNoise('ballHair', this.mainStroke, 6, 80.0, 6.0);
+      // // var ballHair2 = this.copyAndApplyNoise('ballHair', this.secondaryStroke, 5, 16.0, 4.0)
+
+      // var rootHair1 = this.copyAndApplyNoise('rootHair', this.mainStroke, 6, 80.0, 6.0);
+      // // var rootHair2 = this.copyAndApplyNoise('rootHair', this.secondaryStroke, 5, 16.0, 4.0)
+
+      // drawGroup.addChildren([this.united , ballSack2, ballSack3, shaft1, shaft2, shaft3, ballHair1, rootHair1]);
+      drawGroup.addChildren([this.united]);
       drawGroup.position.x = drawGroup.position.x + 500;
 
-      return drawGroup
+      this.hair.removeAll();
+      this.pubes.removeAll();
+      this.shaft.removeAll();
+      this.ballSack.removeAll();
+      view.update();
 
-    }
+      return drawGroup;
+
+    };
 
     Penis.prototype.setMoveCords = function() {
       return {
         x : 0,
         y: 0
+      };
+    };
+
+    Penis.prototype.multiUnite = function (array) {
+      
+      var newUnite;
+      var oldUnite;
+
+      for (var i = 0; i < array.length; i++) {
+        console.log(i)
+        if (i === 0) {
+          newUnite = array[i].unite(array[i+1]);
+          continue;
+        }
+
+        if (i === 1) continue
+
+        if(i % 2 !== 0) {
+          newUnite = oldUnite.unite(array[i+1])
+          oldUnite.remove()
+        } else {
+          // oldUnite = newUnite.unite(array[i+1])
+          newUnite.remove()
+        }
+
+        console.log(newUnite)
+        console.log(oldUnite)
+
       }
+
+
+
+      if (i % 2 !== 0) {
+        return  newUnite;
+      } else {
+        return oldUnite
+      }
+
     }
 
     Penis.prototype.pushShiftSegments = function(array, length, times, back) {
 
       var i = 0;
-      var directtion = back
+      var directtion = back;
 
       for (; i < length; i++) {
         array.push(array.shift());
       }
 
-      this.united.removeSegment(this.united.segments.length)
+      this.united.removeSegment(this.united.segments.length);
       // this.united.removeSegment(this.united.segments.length)
 
-    }
+    };
 
     Penis.prototype.copyAndApplyNoise = function(source, strokWidth, sampleDist, noiseDiv, noiseScale) {
       var path = this[source].clone();
@@ -212,7 +259,7 @@
       this.applyNoiseToPath(path, sampleDist, noiseDiv, noiseScale);
 
       return path;
-    }
+    };
 
     Penis.prototype.applyNoiseToPath = function(path, sampleDist, noiseDiv, noiseScale) {
 
@@ -230,20 +277,23 @@
           path.flatten(sampleDist);
         }
 
-        for(var i = 0; i < path.segments.length; i++) {
-            var noiseX = noise.noise(path.segments[i].point.x / noiseDiv,
-                path.segments[i].point.y / noiseDiv,
-                noiseSeed);
-            var noiseY = noise.noise(path.segments[i].point.y / noiseDiv,
-                noiseSeed,
-                path.segments[i].point.x / noiseDiv);
+        var j = 0;
+        var length = path.segments.length;
 
-            path.segments[i].point = path.segments[i].point + new Point(noiseX, noiseY) * noiseScale;
+        for(; j < length; j++) {
+            var noiseX = noise.noise(path.segments[j].point.x / noiseDiv,
+                path.segments[j].point.y / noiseDiv,
+                noiseSeed);
+            var noiseY = noise.noise(path.segments[j].point.y / noiseDiv,
+                noiseSeed,
+                path.segments[j].point.x / noiseDiv);
+
+            path.segments[j].point = path.segments[j].point + new Point(noiseX, noiseY) * noiseScale;
         }
         path.smooth();
       }
 
-    }
+    };
 
     Penis.prototype.update = function(event) {
 
@@ -255,7 +305,7 @@
         shaftLength: this.shaftLength,
         shaftThickness: this.shaftThickness,
         rootSize: this.rootSize,
-      })
+      });
 
       this.ballSack.changeSize({
         startPosition: this.startPosition,
@@ -265,7 +315,7 @@
         sackHandleLengthRate: this.sackHandleLengthRate,
         size: this.ballsSize,
         rootSize: this.rootSize
-      })
+      });
 
       this.ballSack.changeSize({
         startPosition: this.startPosition,
@@ -275,7 +325,7 @@
         sackHandleLengthRate: this.sackHandleLengthRate,
         size: this.ballsSize,
         rootSize: this.rootSize
-      })
+      });
 
       this.hair.changeSize({
         left: this.leftBallPosition,
@@ -284,7 +334,7 @@
         size: this.ballsSize,
         stroke: this.mainStroke,
         amount: 120
-      })
+      });
 
       this.pubes.changeSize({
         left: this.startPosition[0] - this.rootSize / 3,
@@ -293,15 +343,15 @@
         size: this.rootSize + this.rootSize / 3,
         stroke: this.mainStroke,
         amount: 60
-      })
+      });
 
-    }
+    };
 
     return Penis;
 
-  })()
+  })();
 
-  var penis = new CreatePenis()
+  var penis = new CreatePenis();
 
   var text = new PointText(new Point(30, 30));
   text.fillColor = 'black';
@@ -317,26 +367,26 @@
   var gui = new dat.GUI();
   var GlobalFolder = gui.addFolder('Global');
   GlobalFolder.add(penis, 'update');
-  GlobalFolder.add(penis, 'draw')
-  GlobalFolder.add(penis, 'drawMany')
+  GlobalFolder.add(penis, 'draw');
+  GlobalFolder.add(penis, 'drawMany');
 
-  GlobalFolder.open()
+  GlobalFolder.open();
 
   var shaftFolder = gui.addFolder('Shaft');
-  shaftFolder.add(penis, 'shaftThickness', 90, 150)
-  shaftFolder.add(penis, 'shaftLength', 0, 1000)
-  shaftFolder.add(penis, 'shaftAngle', -100, 200)
-  shaftFolder.add(penis, 'shaftCurve')
+  shaftFolder.add(penis, 'shaftThickness', 90, 150);
+  shaftFolder.add(penis, 'shaftLength', 0, 1000);
+  shaftFolder.add(penis, 'shaftAngle', -100, 200);
+  shaftFolder.add(penis, 'shaftCurve');
 
-  shaftFolder.open()
+  shaftFolder.open();
 
   var ballSackFolder = gui.addFolder('balls');
 
-  ballSackFolder.add(penis, 'leftBallPosition', 100, 300)
-  ballSackFolder.add(penis, 'rightBallPosition', 100, 300)
-  ballSackFolder.add(penis, 'ballsWeight', 500, 600)
-  ballSackFolder.add(penis, 'ballsSize', 80, 120)
-  ballSackFolder.add(penis, 'sackVelocity', 0.7, 1.2)
-  ballSackFolder.add(penis, 'sackHandleLengthRate', 3.0, 6.0)
+  ballSackFolder.add(penis, 'leftBallPosition', 100, 300);
+  ballSackFolder.add(penis, 'rightBallPosition', 100, 300);
+  ballSackFolder.add(penis, 'ballsWeight', 500, 600);
+  ballSackFolder.add(penis, 'ballsSize', 80, 120);
+  ballSackFolder.add(penis, 'sackVelocity', 0.7, 1.2);
+  ballSackFolder.add(penis, 'sackHandleLengthRate', 3.0, 6.0);
 
-  ballSackFolder.open()
+  ballSackFolder.open();

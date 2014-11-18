@@ -54,7 +54,7 @@ window.Hair = (function (o) {
     var point = new Point(leftPoint, topPoint);
     var size = new Size(rightPoint, bottomPoint);
     var path = new Path.Rectangle(point, size);
-    path.fillColor = 'orange';
+    path.fillColor = null;
 
     return path
 
@@ -76,7 +76,7 @@ window.Hair = (function (o) {
 
 
     group.addChildren([ballLeft, ballRight])
-    group.fillColor = 'green';
+    group.fillColor = null;
 
     return group
 
